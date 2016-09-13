@@ -11,7 +11,7 @@
 
     > `chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html#nav=utils`
   
-  <img src='http://i.imgur.com/92ceugE.png' style='height:50%;'>
+  <img src='http://i.imgur.com/92ceugE.png' width='500'>
   
   2. 在URL貼上: 
 
