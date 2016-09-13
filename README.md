@@ -14,3 +14,5 @@
   2. 在URL貼上: 
 
     > `https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js`
+
+(http://i.imgur.com/1LnOkMU.png?1)
