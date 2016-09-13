@@ -9,7 +9,7 @@
 2. 匯入腳本
   1. 安裝好\*Monkey之後進入**設定匯入匯出工具**頁面 
 
-  > chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html#nav=utils
+  > `chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html#nav=utils`
   
   2. 在URL貼上: 
 
