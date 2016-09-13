@@ -21,4 +21,5 @@
 
 ## 自動更新
 1. 點擊「檢查使用者腳本更新」即可
+
   <img src='http://imgur.com/FPGKocE.png'>
