@@ -18,3 +18,7 @@
     > `https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js`
 
     <img src='http://imgur.com/rytQdEl.png'>
+
+## 自動更新
+1. 點擊「檢查使用者腳本更新」即可
+  <img src='http://imgur.com/FPGKocE.png'>
