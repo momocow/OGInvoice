@@ -11,8 +11,10 @@
 
     > `chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html#nav=utils`
   
-  <img src='http://i.imgur.com/92ceugE.png' width='500'>
+    <img src='http://i.imgur.com/92ceugE.png'>
   
   2. 在URL貼上: 
 
     > `https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js`
+
+    <img src='http://imgur.com/rytQdEl.png'>
