@@ -3,5 +3,7 @@
 
 ## 安裝方法
 ### 1. 使用可加入自定義腳本的瀏覽器插件
-Chrome瀏覽器請下載[TemperMonkey] (https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
-Firefox瀏覽器請下載 [GeaseMonkey] (https://addons.mozilla.org/zh-tw/firefox/addon/greasemonkey)
+- Chrome瀏覽器請下載[TemperMonkey] (https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
+- Firefox瀏覽器請下載 [GeaseMonkey] (https://addons.mozilla.org/zh-tw/firefox/addon/greasemonkey)
+
+### 2. 新增腳本
