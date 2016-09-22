@@ -2,7 +2,7 @@
 // @name OGInvoice
 // @namespace https://github.com/momocow/OGInvoice
 // @description OGame: Trade Tracker
-// @version 2.1.5
+// @version 2.1.6
 // @author MomoCow
 // @supportURL https://github.com/momocow/OGInvoice/issues
 // @updateURL https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js
@@ -17,7 +17,7 @@
     function OGInv() {
 		//DATA 
         this.calQueue = [];
-        this.info = {name: "OGInvoice", version: "2.1.5", author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], storage: []};
+        this.info = {name: "OGInvoice", version: "2.1.6", author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], storage: []};
 		
 		//init
 		var sloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage'));
@@ -48,6 +48,8 @@
 		this.reset = function(){
 			localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic');
 			localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage');
+            this.info.storage = [];
+            this.info.statistic = [];
 			this.refreshPanel();
 		};
 		
@@ -141,10 +143,14 @@
 		};
 		
 		this.refreshPanel = function(){
-			$("#oginv_info_total").children().remove();
+			$(".oginv_data").remove();
 			for(var idx in this.info.statistic){
                 $('#oginv_info_total').append('<div class="oginv_data"><div class="oginv_field">'+this.info.statistic[idx].info.name+'</div><div class="oginv_field">'+this.info.statistic[idx].info.metal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.crystal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.deut+'</div><div class="oginv_field">'+this.info.statistic[idx].info.date+' '+this.info.statistic[idx].info.time+'</div></div>');
             }
+            //re-styling
+            $('.oginv_data, .oginv_data_title').css({'display':'table-row'});
+            $('.oginv_field').css({'display':'table-cell', 'padding':'7px 22px 7px 22px'});
+            $('.oginv_data, .oginv_field').css({'border': '1px solid #6f6f6f'});
 		};
 		
         this.showPanel = function(){
@@ -160,7 +166,7 @@
                     
                     //DOM contructing
                     $('head').append('<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/components/button.min.css">');
-                    $('#contentWrapper').after('<div id="oginv_page"><div id="oginv_info_banner"><h2>交易統計</h2></div><div class="oginv_row"><div class="oginv_label"><h2>累計交易量</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">更新時間</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>重設所有資料</h2></div><div class="oginv_content"><a class="btn_blue" id="oginv_btn_reset_all">重設</a></div></div></div>');
+                    $('#contentWrapper').after('<div id="oginv_page"><div id="oginv_info_banner"><h2>交易統計</h2></div><div class="oginv_row"><div class="oginv_label"><h2>累計交易量</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">更新時間</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>重設所有資料</h2></div><div class="oginv_content"><a class="btn_blue" id="oginv_btn_reset_all">重設</a></div></div></div>');
                     //show statistic
                     oginv.refreshPanel();
                     
@@ -173,10 +179,7 @@
                     $('.oginv_label').css({"height":"28px", "position":"relative", "background-image":"url(//gf1.geo.gfsrv.net/cdn63/10e31cd5234445e4084558ea3506ea.gif)", "background-repeat":"no-repeat"});
                     $('.oginv_label h2').css({"text-align":"center", "color":"#6f9fc8", "font":"700 12px/28px Verdana,Arial,Helvetica,sans-serif"});
                     $('.oginv_content').css({"background":"url(//gf1.geo.gfsrv.net/cdn03/db530b4ddcbe680361a6f837ce0dd7.gif) repeat-y", "margin":"0", "min-height":"115px", "padding":"10px 0", "position":"relative", "text-align":"center"});
-                    $('#oginv_info_total').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse'});
-                    $('.oginv_data').css({'display':'table-row'});
-                    $('.oginv_field').css({'display':'table-cell', 'padding':'7px 22px 7px 22px'});
-                    $('#oginv_info_total, .oginv_data, .oginv_field').css({'border': '1px solid #6f6f6f'});
+                    $('#oginv_info_total').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse','border': '1px solid #6f6f6f'});
 					
 					//event
 					$('#oginv_btn_reset_all').on('click', function(){oginv.reset();});
