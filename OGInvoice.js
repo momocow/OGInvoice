@@ -2,7 +2,7 @@
 // @name OGInvoice
 // @namespace https://github.com/momocow/OGInvoice
 // @description OGame: Trade Tracker
-// @version 2.1.2
+// @version 2.1.3
 // @author MomoCow
 // @supportURL https://github.com/momocow/OGInvoice/issues
 // @updateURL https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js
@@ -17,7 +17,7 @@
     function OGInv() {
 		//DATA 
         this.calQueue = [];
-        this.info = {name: "OGInvoice", version: "2.1.2", author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], storage: []};
+        this.info = {name: "OGInvoice", version: "2.1.3", author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], storage: []};
 		
 		//init
 		var sloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage'));
