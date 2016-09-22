@@ -10,7 +10,7 @@
 // @run-at document-end
 // ==/UserScript==
 
-(function() {
+(function() { 
     'use strict';
 
     //Script Object
