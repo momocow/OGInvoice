@@ -102,10 +102,10 @@
         this.calculate = function(){
             if($(this.calQueue).size()>0){
                 var now = $('.OGameClock').text().split(" ");
-                for(var sidx in this.calQueue){console.log(this.calQueue[sidx]);
+                for(var sidx in this.calQueue){
                     var logged = false;
                     for(var cidx in this.info.statistic){
-                        if(this.info.statistic[cidx].info.src == this.calQueue[sidx].info.src){//console.log(this.info.statistic[cidx]);
+                        if(this.info.statistic[cidx].info.src == this.calQueue[sidx].info.src){
                             logged = true;
                             this.info.statistic[cidx].info.name = this.calQueue[sidx].info.name;
                             this.info.statistic[cidx].info.date = now[0];
@@ -179,7 +179,7 @@
                     $('#oginv_info_total, .oginv_data, .oginv_field').css({'border': '1px solid #6f6f6f'});
 					
 					//event
-					$('#oginv_btn_reset_all').on('click', oginv.reset);
+					$('#oginv_btn_reset_all').on('click', function(){oginv.reset();});
                     
                 }});
             $('#oginv_img_setting').css('background', 'transparent url(https://i.imgur.com/PkGTYyO.png) no-repeat 0 0')
