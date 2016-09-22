@@ -15,25 +15,40 @@
 
     //Script Object
     function OGInv(){
-        var sloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage'));
-        var cloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic'));
-        
+		//DATA
+        this.calQueue = [];
         this.info = {name: "OGInvoice", version: "1.0", author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], storage: []};
-        if(sloaded){
+        this.playerLib = null;
+		this.dfd = new $.Deferred();
+		
+		//init
+		var sloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage'));
+        var cloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic'));
+		if(sloaded){
             this.info.storage = sloaded;
         }
         if(cloaded){
             this.info.statistic = cloaded;
         }
+		$.ajax('/api/players.xml').done(function(xml){
+			this.playerLib = xml;
+			dfd.resolve();
+		});
         
-        this.modified = false;
-        this.calQueue = [];
+		
+		//METHOD
         this.toString = function(){
             return JSON.stringify(this.info);
         };
+		
+		this.done = function(cb){
+			this.dfd.promise().done(cb);
+		};
+		
         this.res2int = function(str){
             return parseInt(str.replace(/,/g, ''));
         };
+		
         this.int2res = function(int){
             var str = "";
             while(int > 0){
@@ -49,6 +64,7 @@
             }
             return str;
         };
+		
         this.push = function(item){
             for(var id in this.info.storage){
                 if(item.is(this.info.storage[id])){
@@ -56,25 +72,27 @@
                 }
             }
             
-            this.modified = true;
             this.calQueue.push(item);
             this.info.storage.push(item);
             return this;
         };
+		
         this.pop = function(){
             this.storage.pop();
             return this;
         };
+		
         this.save = function(){
-            if(this.modified){
+            if(this.calQueue.size()>0){
                 localStorage.setItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic', JSON.stringify(this.info.statistic));
                 localStorage.setItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage', JSON.stringify(this.info.storage));
                 this.modified = false;
             }
             return this;
         };
+		
         this.calculate = function(){
-            if(this.modified){
+            if(this.calQueue.size()>0){
                 var now = $('.OGameClock').text().split(" ");
                 for(var sidx in this.calQueue){//console.log(this.info.storage[sidx]);
                     var logged = false;
@@ -95,6 +113,7 @@
             this.calQueue = [];
             return this;
         };
+		
         this.record = function(txt){
             $(txt).find('.msg').each(function(id, m){
                 var invoice_pattern = /由外來艦隊運送的資源\s(\d\d\.\d\d\.\d\d\d\d)\s(\d\d\:\d\d\:\d\d)\s來自\:\s太空監測\s來自\s(.+)\s\([^\[]+\[(\d\:\d{1,3}:\d{1,2})\]\)\s的一支艦隊正運送著資源到\s.+\s\[(\d\:\d{1,3}\:\d{1,2})\]\s\:金屬\:\s([\d,]+)\s單位,晶體\:\s([\d,]+)\s單位,重氫\:\s([\d,]+)\s單位/;
@@ -108,6 +127,7 @@
             
             return this;
         };
+		
         this.showPanel = function(){
             $('#menuTable').append('<li><span class="menu_icon"><a id="oginv_btn_setting" class="tooltipRight" title="設定"><div id="oginv_img_setting"></div></span><a id="oginv_btn_info" class="menubutton" href="javascript:void(0)"><span class="textlabel">交易統計</span></a></li>');
             $('#oginv_btn_info').on('click', function (){
@@ -175,15 +195,16 @@
     //Script instance
     var oginv = new OGInv();
 
-    if(location.href.indexOf('ogame.gameforge.com/game/index.php?page=messages') >=0){
-        $(document).ajaxSuccess(function(e,d,s){
-            if(s.url === "index.php?page=messages&tab=23&ajax=1" || /.*&tabid=23.*&pagination=\d+&ajax=1/.exec(s.data)){
-                var tmp = $(document.createElement('div')).append(d.responseText);
-                oginv.record(tmp).calculate().save();
-            }
-        });
-    }
-    
-    oginv.showPanel();
-
+	oginv.done(function(){
+		if(location.href.indexOf('ogame.gameforge.com/game/index.php?page=messages') >=0){
+			$(document).ajaxSuccess(function(e,d,s){
+				if(s.url === "index.php?page=messages&tab=23&ajax=1" || /.*&tabid=23.*&pagination=\d+&ajax=1/.exec(s.data)){
+					var tmp = $(document.createElement('div')).append(d.responseText);
+					oginv.record(tmp).calculate().save();
+				}
+			});
+		}
+		
+		oginv.showPanel();
+	});
 })();
