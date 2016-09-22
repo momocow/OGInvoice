@@ -2,7 +2,7 @@
 // @name OGInvoice
 // @namespace https://github.com/momocow/OGInvoice
 // @description OGame: Trade Tracker
-// @version 1.1
+// @version 2.0
 // @creator MomoCow
 // @supportURL https://github.com/momocow/OGInvoice/issues
 // @updateURL https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js
@@ -18,8 +18,6 @@
 		//DATA
         this.calQueue = [];
         this.info = {name: "OGInvoice", version: "1.0", author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], storage: []};
-        this.playerLib = null;
-		this.dfd = new $.Deferred();
 		
 		//init
 		var sloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage'));
@@ -30,11 +28,6 @@
         if(cloaded){
             this.info.statistic = cloaded;
         }
-		$.ajax('/api/players.xml').done(function(xml){
-			this.playerLib = xml;
-			dfd.resolve();
-		});
-        
 		
 		//METHOD
         this.toString = function(){
@@ -51,7 +44,9 @@
 		
         this.int2res = function(int){
             var str = "";
-            while(int > 0){
+            if(int === 0) return '0';
+            else if(int < 0) return 'error: negative resources';
+            else while(int > 0){
                 if(str !== ""){
                     str = "," + str;
                 }
@@ -83,22 +78,23 @@
         };
 		
         this.save = function(){
-            if(this.calQueue.size()>0){
+            if($(this.calQueue).size()>0){
                 localStorage.setItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic', JSON.stringify(this.info.statistic));
                 localStorage.setItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage', JSON.stringify(this.info.storage));
-                this.modified = false;
+                this.calQueue = [];
             }
             return this;
         };
 		
         this.calculate = function(){
-            if(this.calQueue.size()>0){
+            if($(this.calQueue).size()>0){
                 var now = $('.OGameClock').text().split(" ");
-                for(var sidx in this.calQueue){//console.log(this.info.storage[sidx]);
+                for(var sidx in this.calQueue){console.log(this.calQueue[sidx]);
                     var logged = false;
                     for(var cidx in this.info.statistic){
                         if(this.info.statistic[cidx].info.src == this.calQueue[sidx].info.src){//console.log(this.info.statistic[cidx]);
                             logged = true;
+                            this.info.statistic[cidx].info.name = this.calQueue[sidx].info.name;
                             this.info.statistic[cidx].info.date = now[0];
                             this.info.statistic[cidx].info.time = now[1];
                             this.info.statistic[cidx].info.metal = this.int2res(this.res2int(this.info.statistic[cidx].info.metal) + this.res2int(this.calQueue[sidx].info.metal));
@@ -106,11 +102,10 @@
                             this.info.statistic[cidx].info.deut = this.int2res(this.res2int(this.info.statistic[cidx].info.deut) + this.res2int(this.calQueue[sidx].info.deut));
                         }
                     }
-                    if(!logged) this.info.statistic.push(new Invoice(now[0], now[1], this.calQueue[sidx].info.src, undefined, undefined, this.calQueue[sidx].info.metal, this.calQueue[sidx].info.crystal, this.calQueue[sidx].info.deut, undefined));
+                    if(!logged) this.info.statistic.push(new Invoice(this.calQueue[sidx].info.src, now[0], now[1], this.calQueue[sidx].info.src, this.calQueue[sidx].info.name, undefined, undefined, this.calQueue[sidx].info.metal, this.calQueue[sidx].info.crystal, this.calQueue[sidx].info.deut, undefined));
                 }
             }
-            
-            this.calQueue = [];
+
             return this;
         };
 		
@@ -120,13 +115,17 @@
                 var clrStr = $(m).text().replace(/(\s)+/g,'$1');
                 var abstract = invoice_pattern.exec(clrStr);
                 if(abstract){
-                    var invoice = new Invoice(abstract[1], abstract[2], abstract[3], abstract[4], abstract[5], abstract[6], abstract[7], abstract[8], $(m).html());
+                    var invoice = new Invoice($(m).data('msgId'), abstract[1], abstract[2], $($(m).find('.player').attr('title').replace(/玩家\:[^\|]*\|/, '')).find('.sendMail.tooltip').data('playerid'), abstract[3], abstract[4], abstract[5], abstract[6], abstract[7], abstract[8], $(m).html());
                     oginv.push(invoice);
                 }
             });
             
             return this;
         };
+		
+		this.player = function(name){
+			return $(this.playerLib).find('player[name=\'' + name + '\']').attr('id');
+		};
 		
         this.showPanel = function(){
             $('#menuTable').append('<li><span class="menu_icon"><a id="oginv_btn_setting" class="tooltipRight" title="設定"><div id="oginv_img_setting"></div></span><a id="oginv_btn_info" class="menubutton" href="javascript:void(0)"><span class="textlabel">交易統計</span></a></li>');
@@ -144,7 +143,7 @@
                     $('#contentWrapper').after('<div id="oginv_page"><div id="oginv_info_banner"><h2>交易統計</h2></div><div class="oginv_row"><div class="oginv_label"><h2>累計交易量</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">更新時間</div></div></div></div></div></div>');
                     //show statistic
                     for(var idx in oginv.info.statistic){
-                        $('#oginv_info_total').append('<div class="oginv_data"><div class="oginv_field">'+oginv.info.statistic[idx].info.src+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.metal+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.crystal+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.deut+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.date+' '+oginv.info.statistic[idx].info.time+'</div></div>');
+                        $('#oginv_info_total').append('<div class="oginv_data"><div class="oginv_field">'+oginv.info.statistic[idx].info.name+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.metal+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.crystal+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.deut+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.date+' '+oginv.info.statistic[idx].info.time+'</div></div>');
                     }
                     
                     //styling
@@ -176,35 +175,28 @@
     }
     
     //Storage Item Object
-    function Invoice(da, ti, s, f,to, m, c, de, r){
-        this.info = {date: da, time: ti, src: s, from: f, to: to, metal: m, crystal: c, deut: de, raw: r};
+    function Invoice(i, da, ti, s, n, f,to, m, c, de, r){
+        this.info = {id: i, date: da, time: ti, src: s, name: n, from: f, to: to, metal: m, crystal: c, deut: de, raw: r};
         this.toString = function(){
             return JSON.stringify(this.info);
         };
         this.is = function(other){
-            var ans = true;
-            $.each(this.info, function(id, value){
-                if(!other.info[id] || other.info[id] !== value){
-                    ans = false;
-                }
-            });
-            return ans;
+            if(this.info.id && other.info.id) return (this.info.id === other.info.id);
+            return false;
         };
     }
     
     //Script instance
     var oginv = new OGInv();
 
-	oginv.done(function(){
-		if(location.href.indexOf('ogame.gameforge.com/game/index.php?page=messages') >=0){
-			$(document).ajaxSuccess(function(e,d,s){
-				if(s.url === "index.php?page=messages&tab=23&ajax=1" || /.*&tabid=23.*&pagination=\d+&ajax=1/.exec(s.data)){
-					var tmp = $(document.createElement('div')).append(d.responseText);
-					oginv.record(tmp).calculate().save();
-				}
-			});
-		}
+    if(location.href.indexOf('ogame.gameforge.com/game/index.php?page=messages') >=0){
+        $(document).ajaxSuccess(function(e,d,s){
+            if(s.url === "index.php?page=messages&tab=23&ajax=1" || /.*&tabid=23.*&pagination=\d+&ajax=1/.exec(s.data)){
+                var tmp = $(document.createElement('div')).append(d.responseText);
+                oginv.record(tmp).calculate().save();
+            }
+        });
+	}
 		
 		oginv.showPanel();
-	});
 })();
