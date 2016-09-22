@@ -2,7 +2,7 @@
 // @name OGInvoice
 // @namespace https://github.com/momocow/OGInvoice
 // @description OGame: Trade Tracker
-// @version 2.1.1
+// @version 2.1.2
 // @author MomoCow
 // @supportURL https://github.com/momocow/OGInvoice/issues
 // @updateURL https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js
@@ -14,10 +14,10 @@
     'use strict';
 
     //Script Object
-    function OGInv(){
-		//DATA
+    function OGInv() {
+		//DATA 
         this.calQueue = [];
-        this.info = {name: "OGInvoice", version: "2.1.1", author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], storage: []};
+        this.info = {name: "OGInvoice", version: "2.1.2", author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], storage: []};
 		
 		//init
 		var sloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage'));
@@ -173,7 +173,7 @@
                     $('#oginv_info_total, .oginv_data, .oginv_field').css({'border': '1px solid #6f6f6f'});
 					
 					//event
-					$('#oginv_btn_reset_all').on('click', oginv.reset());
+					$('#oginv_btn_reset_all').on('click', oginv.reset);
                     
                 }});
             $('#oginv_img_setting').css('background', 'transparent url(https://i.imgur.com/PkGTYyO.png) no-repeat 0 0')
