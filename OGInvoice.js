@@ -17,7 +17,7 @@
     function OGInv(){
 		//DATA
         this.calQueue = [];
-        this.info = {name: "OGInvoice", version: "1.0", author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], storage: []};
+        this.info = {name: "OGInvoice", version: "2.0.0", author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], storage: []};
 		
 		//init
 		var sloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage'));
@@ -34,8 +34,20 @@
             return JSON.stringify(this.info);
         };
 		
-		this.done = function(cb){
-			this.dfd.promise().done(cb);
+		this.update = function(){
+			var v = localStorage.getItem('oginv_version');
+			if(v && v !== this.info.version){
+				this.reset();
+				localStorage.setItem('oginv_version', this.info.version);
+			}
+			else if(!v){
+				localStorage.setItem('oginv_version', this.info.version);
+			}
+		};
+		
+		this.reset = function(){
+			localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic');
+			localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage');
 		};
 		
         this.res2int = function(str){
@@ -140,7 +152,7 @@
                     
                     //DOM contructing
                     $('head').append('<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/components/button.min.css">');
-                    $('#contentWrapper').after('<div id="oginv_page"><div id="oginv_info_banner"><h2>交易統計</h2></div><div class="oginv_row"><div class="oginv_label"><h2>累計交易量</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">更新時間</div></div></div></div></div></div>');
+                    $('#contentWrapper').after('<div id="oginv_page"><div id="oginv_info_banner"><h2>交易統計</h2></div><div class="oginv_row"><div class="oginv_label"><h2>累計交易量</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">更新時間</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>重設所有資料</h2></div><div class="oginv_content"><a class="btn_blue" id="oginv_btn_reset_all"></a></div></div></div>');
                     //show statistic
                     for(var idx in oginv.info.statistic){
                         $('#oginv_info_total').append('<div class="oginv_data"><div class="oginv_field">'+oginv.info.statistic[idx].info.name+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.metal+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.crystal+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.deut+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.date+' '+oginv.info.statistic[idx].info.time+'</div></div>');
@@ -159,6 +171,9 @@
                     $('.oginv_data').css({'display':'table-row'});
                     $('.oginv_field').css({'display':'table-cell', 'padding':'7px 22px 7px 22px'});
                     $('#oginv_info_total, .oginv_data, .oginv_field').css({'border': '1px solid #6f6f6f'});
+					
+					//event
+					$('#oginv_btn_reset_all').on('click', oginv.reset());
                     
                 }});
             $('#oginv_img_setting').css('background', 'transparent url(https://i.imgur.com/PkGTYyO.png) no-repeat 0 0')
@@ -188,6 +203,7 @@
     
     //Script instance
     var oginv = new OGInv();
+	oginv.update();
 
     if(location.href.indexOf('ogame.gameforge.com/game/index.php?page=messages') >=0){
         $(document).ajaxSuccess(function(e,d,s){
