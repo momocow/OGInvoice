@@ -2,7 +2,7 @@
 // @name OGInvoice
 // @namespace https://github.com/momocow/OGInvoice
 // @description OGame: Trade Tracker
-// @version 2.0.0
+// @version 2.1.0
 // @author MomoCow
 // @supportURL https://github.com/momocow/OGInvoice/issues
 // @updateURL https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js
@@ -10,7 +10,7 @@
 // @run-at document-end
 // ==/UserScript==
 
-(function() { 
+(function() {
     'use strict';
 
     //Script Object
