@@ -48,6 +48,7 @@
 		this.reset = function(){
 			localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic');
 			localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage');
+			this.refreshPanel();
 		};
 		
         this.res2int = function(str){
@@ -139,6 +140,13 @@
 			return $(this.playerLib).find('player[name=\'' + name + '\']').attr('id');
 		};
 		
+		this.refreshPanel: function(){
+			$("#oginv_info_total").empty();
+			for(var idx in this.info.statistic){
+                $('#oginv_info_total').append('<div class="oginv_data"><div class="oginv_field">'+this.info.statistic[idx].info.name+'</div><div class="oginv_field">'+this.info.statistic[idx].info.metal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.crystal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.deut+'</div><div class="oginv_field">'+this.info.statistic[idx].info.date+' '+this.info.statistic[idx].info.time+'</div></div>');
+            }
+		};
+		
         this.showPanel = function(){
             $('#menuTable').append('<li><span class="menu_icon"><a id="oginv_btn_setting" class="tooltipRight" title="設定"><div id="oginv_img_setting"></div></span><a id="oginv_btn_info" class="menubutton" href="javascript:void(0)"><span class="textlabel">交易統計</span></a></li>');
             $('#oginv_btn_info').on('click', function (){
@@ -154,9 +162,7 @@
                     $('head').append('<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/components/button.min.css">');
                     $('#contentWrapper').after('<div id="oginv_page"><div id="oginv_info_banner"><h2>交易統計</h2></div><div class="oginv_row"><div class="oginv_label"><h2>累計交易量</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">更新時間</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>重設所有資料</h2></div><div class="oginv_content"><a class="btn_blue" id="oginv_btn_reset_all">重設</a></div></div></div>');
                     //show statistic
-                    for(var idx in oginv.info.statistic){
-                        $('#oginv_info_total').append('<div class="oginv_data"><div class="oginv_field">'+oginv.info.statistic[idx].info.name+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.metal+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.crystal+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.deut+'</div><div class="oginv_field">'+oginv.info.statistic[idx].info.date+' '+oginv.info.statistic[idx].info.time+'</div></div>');
-                    }
+                    oginv.refreshPanel();
                     
                     //styling
                     $('#oginv_page').css({'width':"670px", 'overflow':"visible", 'position':"relative", 'padding':"0 0 25px 0",'float':"left"});
