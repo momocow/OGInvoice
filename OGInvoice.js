@@ -2,7 +2,7 @@
 // @name OGInvoice
 // @namespace https://github.com/momocow/OGInvoice
 // @description OGame: Trade Tracker
-// @version 2.1.6
+// @version 2.2.0
 // @author MomoCow
 // @supportURL https://github.com/momocow/OGInvoice/issues
 // @updateURL https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js
@@ -17,7 +17,7 @@
     function OGInv() {
 		//DATA 
         this.calQueue = [];
-        this.info = {name: "OGInvoice", version: "2.1.6", author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], storage: []};
+        this.info = {name: "OGInvoice", version: '2.2.0', author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], storage: []};
 		
 		//init
 		var sloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage'));
@@ -36,13 +36,11 @@
 		
 		this.update = function(){
 			var v = localStorage.getItem('oginv_version');
-			if(v && v !== this.info.version){
-				this.reset();
-				localStorage.setItem('oginv_version', this.info.version);
+			if(v && v === this.info.version){
+				return this;
 			}
-			else if(!v){
-				localStorage.setItem('oginv_version', this.info.version);
-			}
+			localStorage.setItem('oginv_version', this.info.version);
+			return this;
 		};
 		
 		this.reset = function(){
@@ -74,6 +72,34 @@
             }
             return str;
         };
+		
+		this.latest_datetime  = function(dtset){
+			dtset = $.map(dtset, function(value, idx){
+				return new Date(value.replace(/(\d{1,2})\.(\d{1,2})\.(\d{4}) (\d\d\:\d\d\:\d\d)/,'$3 $2 $1 $4'));
+			});
+
+			var latest = null;
+			for(var dt_idx in dtset){
+				if(latest === null || latest.getTime() < dtset[dt_idx].getTime()){
+					latest = dtset[dt_idx];
+				}
+			}
+            
+            var rdate = '', rtime = '';
+            if(latest.getDate() < 10) rdate += '0' + latest.getDate() + '.';
+            else rdate += latest.getDate() + '.';
+            if(latest.getMonth() < 9) rdate += '0' + (latest.getMonth() + 1) + '.';
+            else rdate += (latest.getMonth() + 1) + '.';
+            rdate += latest.getFullYear();
+
+            if(latest.getHours() < 10) rtime += '0' + latest.getHours() + ':';
+            else rtime += latest.getHours() + ':';
+            if(latest.getMinutes() < 10) rtime += '0' + latest.getMinutes() + ':';
+            else rtime += latest.getMinutes() + ':';
+            if(latest.getSeconds() < 10) rtime += '0' + latest.getSeconds();
+            else rtime += latest.getSeconds();
+			return {date: rdate, time: rtime};
+		};
 		
         this.push = function(item){
             for(var id in this.info.storage){
@@ -108,19 +134,30 @@
                     var logged = false;
                     for(var cidx in this.info.statistic){
                         if(this.info.statistic[cidx].info.src == this.calQueue[sidx].info.src){
+							var timestamp1 = this.info.statistic[cidx].info.date + ' ' + this.info.statistic[cidx].info.time,
+							    timestamp2 = this.calQueue[sidx].info.date + ' ' + this.calQueue[sidx].info.time;
                             logged = true;
                             this.info.statistic[cidx].info.name = this.calQueue[sidx].info.name;
-                            this.info.statistic[cidx].info.date = now[0];
-                            this.info.statistic[cidx].info.time = now[1];
+                            this.info.statistic[cidx].info.udate = now[0];
+                            this.info.statistic[cidx].info.utime = now[1];
+							this.info.statistic[cidx].info.date = this.latest_datetime([timestamp1, timestamp2]).date;
+                            this.info.statistic[cidx].info.time = this.latest_datetime([timestamp1, timestamp2]).time;
                             this.info.statistic[cidx].info.metal = this.int2res(this.res2int(this.info.statistic[cidx].info.metal) + this.res2int(this.calQueue[sidx].info.metal));
                             this.info.statistic[cidx].info.crystal = this.int2res(this.res2int(this.info.statistic[cidx].info.crystal) + this.res2int(this.calQueue[sidx].info.crystal));
                             this.info.statistic[cidx].info.deut = this.int2res(this.res2int(this.info.statistic[cidx].info.deut) + this.res2int(this.calQueue[sidx].info.deut));
                         }
                     }
-                    if(!logged) this.info.statistic.push(new Invoice(this.calQueue[sidx].info.src, now[0], now[1], this.calQueue[sidx].info.src, this.calQueue[sidx].info.name, undefined, undefined, this.calQueue[sidx].info.metal, this.calQueue[sidx].info.crystal, this.calQueue[sidx].info.deut, undefined));
+                    if(!logged) this.info.statistic.push(new Invoice(this.calQueue[sidx].info.src, this.calQueue[sidx].info.date, this.calQueue[sidx].info.time, this.calQueue[sidx].info.src, this.calQueue[sidx].info.name, undefined, undefined, this.calQueue[sidx].info.metal, this.calQueue[sidx].info.crystal, this.calQueue[sidx].info.deut, undefined).set('udate', now[0]).set('utime', now[1]));
                 }
             }
 
+            return this;
+        };
+        
+        this.recalculate = function(){
+            this.info.statistic = [];
+            this.calQueue = [];
+            this.calQueue = this.info.storage.slice();
             return this;
         };
 		
@@ -138,19 +175,22 @@
             return this;
         };
 		
-		this.player = function(name){
-			return $(this.playerLib).find('player[name=\'' + name + '\']').attr('id');
-		};
-		
 		this.refreshPanel = function(){
-			$(".oginv_data").remove();
-			for(var idx in this.info.statistic){
-                $('#oginv_info_total').append('<div class="oginv_data"><div class="oginv_field">'+this.info.statistic[idx].info.name+'</div><div class="oginv_field">'+this.info.statistic[idx].info.metal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.crystal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.deut+'</div><div class="oginv_field">'+this.info.statistic[idx].info.date+' '+this.info.statistic[idx].info.time+'</div></div>');
+            $("#oginv_info_total .oginv_data").remove();
+            if($(this.info.statistic).size() > 0){
+			    for(var idx in this.info.statistic){
+                    $('#oginv_info_total').append('<div class="oginv_data" title="最後更新：'+this.info.statistic[idx].info.udate+' '+this.info.statistic[idx].info.utime+'"><div class="oginv_field">'+this.info.statistic[idx].info.name+'</div><div class="oginv_field">'+this.info.statistic[idx].info.metal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.crystal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.deut+'</div><div class="oginv_field">'+this.info.statistic[idx].info.date+' '+this.info.statistic[idx].info.time+'</div></div>');
+                }
+            }
+            else{
+                $('#oginv_info_total').after('<div id="noData">- 無資料 -</div>');
             }
             //re-styling
             $('.oginv_data, .oginv_data_title').css({'display':'table-row'});
             $('.oginv_field').css({'display':'table-cell', 'padding':'7px 22px 7px 22px'});
-            $('.oginv_data, .oginv_field').css({'border': '1px solid #6f6f6f'});
+            $('#oginv_info_total .oginv_data, #oginv_info_total .oginv_field').css({'border': '1px solid #6f6f6f'});
+            
+            return this;
 		};
 		
         this.showPanel = function(){
@@ -166,7 +206,7 @@
                     
                     //DOM contructing
                     $('head').append('<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.2/components/button.min.css">');
-                    $('#contentWrapper').after('<div id="oginv_page"><div id="oginv_info_banner"><h2>交易統計</h2></div><div class="oginv_row"><div class="oginv_label"><h2>累計交易量</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">更新時間</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>重設所有資料</h2></div><div class="oginv_content"><a class="btn_blue" id="oginv_btn_reset_all">重設</a></div></div></div>');
+                    $('#contentWrapper').after('<div id="oginv_page"><div id="oginv_info_banner"><h2>交易統計</h2></div><div class="oginv_row"><div class="oginv_label"><h2>累計交易量</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">最後交易時間</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>控制台</h2></div><div class="oginv_content"><div class="oginv_table"><div class="oginv_data"><div class="oginv_field"><a class="btn_blue" id="oginv_btn_recal">重新計算</a></div><div class="oginv_field"><a class="btn_blue" id="oginv_btn_reset_all">重設所有資料</a></div></div></div></div></div></div>');
                     //show statistic
                     oginv.refreshPanel();
                     
@@ -179,11 +219,12 @@
                     $('.oginv_label').css({"height":"28px", "position":"relative", "background-image":"url(//gf1.geo.gfsrv.net/cdn63/10e31cd5234445e4084558ea3506ea.gif)", "background-repeat":"no-repeat"});
                     $('.oginv_label h2').css({"text-align":"center", "color":"#6f9fc8", "font":"700 12px/28px Verdana,Arial,Helvetica,sans-serif"});
                     $('.oginv_content').css({"background":"url(//gf1.geo.gfsrv.net/cdn03/db530b4ddcbe680361a6f837ce0dd7.gif) repeat-y", "margin":"0", "min-height":"115px", "padding":"10px 0", "position":"relative", "text-align":"center"});
-                    $('#oginv_info_total').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse','border': '1px solid #6f6f6f'});
-					
-					//event
-					$('#oginv_btn_reset_all').on('click', function(){oginv.reset();});
+                    $('#oginv_info_total').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse','border': '1px solid #6f6f6f', 'max-width': '550px'});
+					$('.oginv_table').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse'});
                     
+					//event
+					$('#oginv_btn_recal').on('click', function(){oginv.recalculate().calculate().save().refreshPanel();});
+                    $('#oginv_btn_reset_all').on('click', function(){oginv.reset();});
                 }});
             $('#oginv_img_setting').css('background', 'transparent url(https://i.imgur.com/PkGTYyO.png) no-repeat 0 0')
                                  .css('height', '27px')
@@ -208,17 +249,20 @@
             if(this.info.id && other.info.id) return (this.info.id === other.info.id);
             return false;
         };
+		this.set = function(index, value){
+			this.info[index] = value;
+			return this;
+		};
     }
     
     //Script instance
     var oginv = new OGInv();
-	oginv.update();
 
     if(location.href.indexOf('ogame.gameforge.com/game/index.php?page=messages') >=0){
         $(document).ajaxSuccess(function(e,d,s){
             if(s.url === "index.php?page=messages&tab=23&ajax=1" || /.*&tabid=23.*&pagination=\d+&ajax=1/.exec(s.data)){
                 var tmp = $(document.createElement('div')).append(d.responseText);
-                oginv.record(tmp).calculate().save();
+                oginv.update().record(tmp).calculate().save();
             }
         });
 	}
