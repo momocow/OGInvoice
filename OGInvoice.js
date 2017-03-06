@@ -350,7 +350,7 @@
         };
         
         this.ajax_search = function(m, p){
-            $.ajax({url:"https://s117-tw.ogame.gameforge.com/game/index.php?page=search",data:{searchValue:$('#oginv_input_search_player').val(),method:m,currentSite:p,ajax:"1"},
+            $.ajax({url:$(location).prop("protocol") + "//" + $(location).prop("host") +"/game/index.php?page=search",data:{searchValue:$('#oginv_input_search_player').val(),method:m,currentSite:p,ajax:"1"},
                         success:function(data){
                             $("#oginv_search_result").html(data);
                             $("#oginv_search_result .ajaxSearch").on("click", function(e){oginv.ajax_search(2, $(e.target).text());});
