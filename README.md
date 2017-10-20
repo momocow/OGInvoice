@@ -13,7 +13,7 @@
   
   2. 在URL貼上: `https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js`
 
-    ![](http://imgur.com/rytQdEl.png)
+    ![](http://i.imgur.com/rytQdEl.png)
 
 ## 自動更新
 1. 點擊「檢查使用者腳本更新」即可
