@@ -9,13 +9,13 @@
 2. 匯入腳本
   1. 安裝好\*Monkey之後進入**設定匯入匯出工具**頁面 
 
-    > `chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html#nav=utils`
+    `chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html#nav=utils`
   
     <img src='http://i.imgur.com/92ceugE.png'>
   
   2. 在URL貼上: 
 
-    > `https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js`
+    `https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js`
 
     <img src='http://imgur.com/rytQdEl.png'>
 
