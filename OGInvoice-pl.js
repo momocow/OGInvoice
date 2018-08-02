@@ -2,11 +2,11 @@
 // @name OGInvoice
 // @namespace https://github.com/momocow/OGInvoice
 // @description OGame: Trade Tracker
-// @version 3.0.1
+// @version 3.0.1-polska.1
 // @author MomoCow
 // @supportURL https://github.com/momocow/OGInvoice/issues
 // @updateURL https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js
-// @include https://*.ogame.gameforge.com/game/index.php?*
+// @include https://s*-pl.ogame.gameforge.com/game/index.php?*
 // @run-at document-end
 // ==/UserScript==
 
@@ -17,7 +17,7 @@
     function OGInv() {
 		//DATA 
         this.calQueue = [];
-        this.info = {name: "OGInvoice", version: '3.0.1', author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], weekly:[], storage: [], setting:{}};
+        this.info = {name: "OGInvoice", version: '3.0.1', author: "MomoCow", site: "https://github.com/momocow", description: "OGame: Trade Tracker", statistic:[], weekly:[], storage: [], setting:{}};
 		
 		//init
 		var sloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage'));
@@ -60,7 +60,7 @@
 		};
 		
         this.res2int = function(str){
-            return parseInt(str.replace(/,/g, ''));
+            return parseInt(str.replace(/\./g, ''));
         };
 		
         this.int2res = function(int){
@@ -72,7 +72,7 @@
             }
             while(int > 0){
                 if(str !== ""){
-                    str = "," + str;
+                    str = "." + str;
                 }
                 var tmp_num = (int % 1000).toString();
                 int = Math.floor(int / 1000);
@@ -229,7 +229,7 @@
 		
         this.record = function(txt){
             $(txt).find('.msg').each(function(id, m){
-                var invoice_pattern = /由外來艦隊運送的資源\s(\d\d\.\d\d\.\d\d\d\d)\s(\d\d\:\d\d\:\d\d)\s來自\:\s太空監測\s來自\s(.+)\s\([^\[]+\[(\d\:\d{1,3}:\d{1,2})\]\)\s的一支艦隊正運送著資源到\s.+\s\[(\d\:\d{1,3}\:\d{1,2})\]\s\:金屬\:\s([\d,]+)\s單位,晶體\:\s([\d,]+)\s單位,重氫\:\s([\d,]+)\s單位/;
+                var invoice_pattern = /dostawa surowców przez obcą flotę\s(\d\d\.\d\d\.\d\d\d\d)\s(\d\d\:\d\d\:\d\d)\sOd\:\sPerymetr Obrony\sFlota od\s(.+)\s\([^\[]+\[(\d\:\d{1,3}:\d{1,2})\]\)\sdostarczyła surowce na\s.+\s\[(\d\:\d{1,3}\:\d{1,2})\]\s\:Metal\:([\d.]+)\sKryształ\:([\d.]+)\sDeuter\:\s([\d.]+)\s/;
                 var clrStr = $(m).text().replace(/(\s)+/g,'$1');
                 var abstract = invoice_pattern.exec(clrStr);
                 if(abstract){
@@ -252,11 +252,11 @@
                         if(contract_status > 0) contract_status = '+' + this.int2res(contract_status);
                         else contract_status = this.int2res(contract_status);
                     }
-                    $('#oginv_contract_statistic').append('<div class="oginv_data" data-oginv-uid="' + this.info.weekly[widx].info.src + '" title="最後更新：'+this.info.weekly[widx].info.udate+' '+this.info.weekly[widx].info.utime+'"><div class="oginv_field"><a href="/game/index.php?page=highscore&searchRelId=' + this.info.weekly[widx].info.src + '">'+this.info.weekly[widx].info.name+'</a></div><div class="oginv_field">'+this.info.weekly[widx].info.metal+'</div><div class="oginv_field">'+this.info.weekly[widx].info.crystal+'</div><div class="oginv_field oginv_contracted_res">'+this.info.weekly[widx].info.deut+'<br>('+ contract_status +')</div><div class="oginv_field">'+this.info.weekly[widx].info.date+' '+this.info.weekly[widx].info.time+'</div></div>');
+                    $('#oginv_contract_statistic').append('<div class="oginv_data" data-oginv-uid="' + this.info.weekly[widx].info.src + '" title="Last Update: '+this.info.weekly[widx].info.udate+' '+this.info.weekly[widx].info.utime+'"><div class="oginv_field"><a href="/game/index.php?page=highscore&searchRelId=' + this.info.weekly[widx].info.src + '">'+this.info.weekly[widx].info.name+'</a></div><div class="oginv_field">'+this.info.weekly[widx].info.metal+'</div><div class="oginv_field">'+this.info.weekly[widx].info.crystal+'</div><div class="oginv_field oginv_contracted_res">'+this.info.weekly[widx].info.deut+'<br>('+ contract_status +')</div><div class="oginv_field">'+this.info.weekly[widx].info.date+' '+this.info.weekly[widx].info.time+'</div></div>');
                 }
             }
             else{
-                if(!$("#oginv_contract_statistic").parents(".oginv_content").find('.noData').length) $('#oginv_contract_statistic').after('<div class="noData">- 無資料 -</div>');
+                if(!$("#oginv_contract_statistic").parents(".oginv_content").find('.noData').length) $('#oginv_contract_statistic').after('<div class="noData">- N.A. -</div>');
             }
             
             //show statistic
@@ -265,11 +265,11 @@
 			    for(var idx in this.info.statistic){
                     var is_contracted = '';
                     if(this.info.setting['u'+this.info.statistic[idx].info.src]) is_contracted = 'oginv_contracted';
-                    $('#oginv_info_total').append('<div class="oginv_data ' + is_contracted + '" title="最後更新：'+this.info.statistic[idx].info.udate+' '+this.info.statistic[idx].info.utime+'"><div class="oginv_field"><a href="/game/index.php?page=highscore&searchRelId=' + this.info.statistic[idx].info.src + '">'+this.info.statistic[idx].info.name+'</a></div><div class="oginv_field">'+this.info.statistic[idx].info.metal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.crystal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.deut+'</div><div class="oginv_field">'+this.info.statistic[idx].info.date+' '+this.info.statistic[idx].info.time+'</div></div>');
+                    $('#oginv_info_total').append('<div class="oginv_data ' + is_contracted + '" title="Last Update: '+this.info.statistic[idx].info.udate+' '+this.info.statistic[idx].info.utime+'"><div class="oginv_field"><a href="/game/index.php?page=highscore&searchRelId=' + this.info.statistic[idx].info.src + '">'+this.info.statistic[idx].info.name+'</a></div><div class="oginv_field">'+this.info.statistic[idx].info.metal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.crystal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.deut+'</div><div class="oginv_field">'+this.info.statistic[idx].info.date+' '+this.info.statistic[idx].info.time+'</div></div>');
                 }
             }
             else{
-                if(!$("#oginv_info_total").parents(".oginv_content").find('.noData').length) $('#oginv_info_total').after('<div class="noData">- 無資料 -</div>');
+                if(!$("#oginv_info_total").parents(".oginv_content").find('.noData').length) $('#oginv_info_total').after('<div class="noData">- N.A. -</div>');
             }
             
             //show raw data
@@ -355,13 +355,13 @@
                             $("#oginv_search_result").html(data);
                             $("#oginv_search_result .ajaxSearch").on("click", function(e){oginv.ajax_search(2, $(e.target).text());});
                             $("#oginv_search_result th.action").prop("colspan", "1");
-                            $("#oginv_search_result td.action a[title=\"寫訊息\"]").each(function(i, e){
+                            $("#oginv_search_result td.action a[title=\"Napisz wiadomość\"]").each(function(i, e){
                                 var uid = $(e).prop('href').replace(/https{0,1}:\/\/.*ogame\.gameforge\.com\/game\/index\.php\?page=chat&playerId=/, '');
                                 if(oginv.info.setting['u'+uid]){
-                                    $(e).replaceWith("<a class='oginv_contracted tooltipRight icon_nf_link' title='註銷' data-oginv-uid='"+uid+"'><span class='icon_nf icon_favorited' data-oginv-uid='"+uid+"'></span></a>");
+                                    $(e).replaceWith("<a class='oginv_contracted tooltipRight icon_nf_link' title='Delete' data-oginv-uid='"+uid+"'><span class='icon_nf icon_favorited' data-oginv-uid='"+uid+"'></span></a>");
                                 }
                                 else{
-                                    $(e).replaceWith("<a class='oginv_to_contract tooltipRight icon_nf_link' title='登記' data-oginv-uid='"+uid+"' ><span class='icon_nf icon_not_favorited' data-oginv-uid='"+uid+"'></span></a>");
+                                    $(e).replaceWith("<a class='oginv_to_contract tooltipRight icon_nf_link' title='Register' data-oginv-uid='"+uid+"' ><span class='icon_nf icon_not_favorited' data-oginv-uid='"+uid+"'></span></a>");
                                 }
                             });
                             $("#oginv_search_result td.action:odd").remove();
@@ -370,7 +370,7 @@
                             $(".oginv_to_contract").on("click", function(e){
                                 var uid = $(e.target).data("oginv-uid"),
                                     udata = $(e.target).parents("tr").find('.userName').text().trim();
-                                $("body").append("<div class='oginv_overlay' id='oginv_overlay_to_contract' title='新增油商'><form><fieldset><label for='oginv_input_contract_day'>每周交易日</label><select class='oginv_select' id='oginv_input_contract_day'><option value='0' selected>星期日</option><option value='1'>星期一</option><option value='2'>星期二</option><option value='3'>星期三</option><option value='4'>星期四</option><option value='5'>星期五</option><option value='6'>星期六</option><option value='-1'>不追蹤交易週期</option></select><label for='oginv_input_contract_amount'>每周交易量</label><input type='text' id='oginv_input_contract_amount' value='0'></fieldset></form></div>");
+                                $("body").append("<div class='oginv_overlay' id='oginv_overlay_to_contract' title='New Partner'><form><fieldset><label for='oginv_input_contract_day'>Trade on every</label><select class='oginv_select' id='oginv_input_contract_day'><option value='0' selected>Sunday</option><option value='1'>Monday</option><option value='2'>Tuesday</option><option value='3'>Wednesday</option><option value='4'>Thursday</option><option value='5'>Friday</option><option value='6'>Saturday</option><option value='-1'>Disable weekly tracker</option></select><label for='oginv_input_contract_amount'>Materials per week</label><input type='text' id='oginv_input_contract_amount' value='0'></fieldset></form></div>");
                                 $("#oginv_input_contract_amount").on("keyup", function(e){$(e.target).val(oginv.int2res($(e.target).val().replace(/[^\d]/g, '')));});
                                 $("#oginv_input_contract_day").css({"width":"200px"}).on("change", function(e){
                                   if($("#oginv_input_contract_day").val() == -1) $("#oginv_input_contract_amount").prop("disabled", true);
@@ -381,7 +381,7 @@
                                 $("#oginv_input_contract_day" ).ogameDropDown();
                                 //$("#oginv_overlay_to_contract").data("oginv-uid", );
                                 $("#oginv_overlay_to_contract").dialog({autoOpen: false, height: 280, width: 350, modal: true, 
-                                                                        buttons:{"新增": function(){
+                                                                        buttons:{"Add": function(){
                                                                             var cd = $("#oginv_input_contract_day").val(),
                                                                                 ca = $("#oginv_input_contract_amount").val();
                                                                             $("#oginv_overlay_to_contract").dialog("close");
@@ -408,11 +408,11 @@
         
         this.refreshSettingPanel = function(){
             $("#oginv_contract_list *").remove();
-            $("#oginv_contract_list").append("<table><tr><th>#</th><th>玩家名稱</th><th>每周交易量</th><th>每周交易日</th><th>註銷</th></tr></table>");
+            $("#oginv_contract_list").append("<table><tr><th>#</th><th>Player</th><th>Materials per week</th><th>Trade on every</th><th>Delete</th></tr></table>");
             var count = 0;
             for(var settingidx in this.info.setting){
                 count ++;
-                $("#oginv_contract_list table").append("<tr id='oginv_contract_data_"+ settingidx + "' data-uidx='"+ settingidx + "'><td>" + count + "</td><td class='oginv_contract_partner'><a href='/game/index.php?page=highscore&searchRelId=" + settingidx.replace(/u/, '') + "'>" + this.info.setting[settingidx].partner + "</a></td><td><input type='text' class='oginv_contract_table_amount' id='oginv_contract_table_amount_" + settingidx + "' value='" + this.info.setting[settingidx].contract_amount + "'></td><td><select class='oginv_contract_table_day' id='oginv_contract_table_day_" + settingidx + "'><option value='0'>星期日</option><option value='1'>星期一</option><option value='2'>星期二</option><option value='3'>星期三</option><option value='4'>星期四</option><option value='5'>星期五</option><option value='6'>星期六</option><option value='-1'>不追蹤交易週期</option></select></td><td><a class='oginv_btn_contract_remove' href='javascript:void(0)' data-oginv-uid='" + settingidx + "'><span class='oginv_img_contract_remove' id='oginv_img_contract_remove_" + settingidx + "' data-oginv-uid='" + settingidx + "'></span></a></td></tr>");
+                $("#oginv_contract_list table").append("<tr id='oginv_contract_data_"+ settingidx + "' data-uidx='"+ settingidx + "'><td>" + count + "</td><td class='oginv_contract_partner'><a href='/game/index.php?page=highscore&searchRelId=" + settingidx.replace(/u/, '') + "'>" + this.info.setting[settingidx].partner + "</a></td><td><input type='text' class='oginv_contract_table_amount' id='oginv_contract_table_amount_" + settingidx + "' value='" + this.info.setting[settingidx].contract_amount + "'></td><td><select class='oginv_contract_table_day' id='oginv_contract_table_day_" + settingidx + "'><option value='0'>Sunday</option><option value='1'>Monday</option><option value='2'>Tuesday</option><option value='3'>Wednesday</option><option value='4'>Thursday</option><option value='5'>Friday</option><option value='6'>Saturday</option><option value='-1'>Disable weekly tracker</option></select></td><td><a class='oginv_btn_contract_remove' href='javascript:void(0)' data-oginv-uid='" + settingidx + "'><span class='oginv_img_contract_remove' id='oginv_img_contract_remove_" + settingidx + "' data-oginv-uid='" + settingidx + "'></span></a></td></tr>");
                 $("#oginv_contract_table_day_" + settingidx + ' option[value=' + this.info.setting[settingidx].contract_day + ']').attr("selected", true);
                 $("#oginv_contract_table_day_" + settingidx).ogameDropDown();
                 $("#oginv_img_contract_remove_" + settingidx).css({"top": (45+(count-1)*27)+"px"});
@@ -431,50 +431,50 @@
             return this.reset_search_form();
         };
         
-        this.readable_day = function(day){
-            if(typeof day === "number"){
-                switch(day){
-                    case 0:
-                        return "日";
-                    case 1:
-                        return "一";
-                    case 2:
-                        return "二";
-                    case 3:
-                        return "三";
-                    case 4:
-                        return "四";
-                    case 5:
-                        return "五";
-                    case 6:
-                        return "六";
-                    default:
-                        return "一個禮拜只有7天喔！";
-                }
-            }
-            else if(typeof day === "string"){
-                 switch(day){
-                    case "日":
-                        return 0;
-                    case "一":
-                        return 1;
-                    case "二":
-                        return 2;
-                    case "三":
-                        return 3;
-                    case "四":
-                        return 4;
-                    case "五":
-                        return 5;
-                    case "六":
-                        return 6;
-                    default:
-                        return "一個禮拜只有7天喔！";
-                }
-            }
+        // this.readable_day = function(day){
+        //     if(typeof day === "number"){
+        //         switch(day){
+        //             case 0:
+        //                 return "日";
+        //             case 1:
+        //                 return "一";
+        //             case 2:
+        //                 return "二";
+        //             case 3:
+        //                 return "三";
+        //             case 4:
+        //                 return "四";
+        //             case 5:
+        //                 return "五";
+        //             case 6:
+        //                 return "六";
+        //             default:
+        //                 return "一個禮拜只有7天喔！";
+        //         }
+        //     }
+        //     else if(typeof day === "string"){
+        //          switch(day){
+        //             case "日":
+        //                 return 0;
+        //             case "一":
+        //                 return 1;
+        //             case "二":
+        //                 return 2;
+        //             case "三":
+        //                 return 3;
+        //             case "四":
+        //                 return 4;
+        //             case "五":
+        //                 return 5;
+        //             case "六":
+        //                 return 6;
+        //             default:
+        //                 return "一個禮拜只有7天喔！";
+        //         }
+        //     }
                 
-            return undefined;
-        };
+        //     return undefined;
+        // };
         
         this.reset_search_form = function (){
             $('#oginv_input_search_player').val("");
@@ -483,10 +483,10 @@
         };
 		
         this.showPanel = function(){
-            $('#menuTable').append('<li><span class="menu_icon"><a id="oginv_btn_setting" class="tooltipRight" title="設定"><div id="oginv_img_setting"></div></span><a id="oginv_btn_info" class="menubutton" href="javascript:void(0)"><span class="textlabel">交易統計</span></a></li>');
+            $('#menuTable').append('<li><span class="menu_icon"><a id="oginv_btn_setting" class="tooltipRight" title="Settings"><div id="oginv_img_setting"></div></span><a id="oginv_btn_info" class="menubutton" href="javascript:void(0)"><span class="textlabel">Trade Tracker</span></a></li>');
             //DOM contructing
-            $('#contentWrapper').after('<div class="oginv_page" id="oginv_info_page"><div class="oginv_info_banner"><h2>交易統計</h2></div><div class="oginv_row"><div class="oginv_label"><h2>每周交易追蹤</h2></div><div class="oginv_content"><div id="oginv_contract_statistic"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">最後交易時間</div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>累計交易量</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">最後交易時間</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>歷史紀錄</h2></div><div class="oginv_content"><div id="oginv_info_raw" data-state="init"></div></div></div></div>')
-                                .after('<div class="oginv_page" id="oginv_setting_page"><div class="oginv_info_banner"><h2>設定</h2></div><div class="oginv_row"><div class="oginv_label"><h2>油商名單</h2></div><div class="oginv_content"><div id="oginv_contract_list"></div><a id="oginv_btn_save_setting" class="btn_blue">保存</a></div></div><div class="oginv_row"><div class="oginv_label"><h2>新增油商</h2></div><div class="oginv_content"><input class="textInput oginv_form" type="search" class="oginv_form" id="oginv_input_search_player" placeholder="玩家名稱" /><a class="btn_blue oginv_form" id="oginv_btn_search_player">搜尋</a><a class="btn_blue oginv_form" id="oginv_btn_search_reset">重設搜尋</a><div id="oginv_search_result"></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>控制台</h2></div><div class="oginv_content"><div class="oginv_table"><div class="oginv_data"><div class="oginv_field"><a class="btn_blue" id="oginv_btn_recal">重新計算</a></div><div class="oginv_field"><a class="btn_blue" id="oginv_btn_reset_all">重設所有交易紀錄和統計資料</a></div></div></div></div></div></div>')
+            $('#contentWrapper').after('<div class="oginv_page" id="oginv_info_page"><div class="oginv_info_banner"><h2>Trade Tracker</h2></div><div class="oginv_row"><div class="oginv_label"><h2>Weekly Tracker</h2></div><div class="oginv_content"><div id="oginv_contract_statistic"><div class="oginv_data_title"><div class="oginv_field">Player</div><div class="oginv_field">Metal</div><div class="oginv_field">Crystal</div><div class="oginv_field">Deut</div><div class="oginv_field">Last Trade</div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>Statistics</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data_title"><div class="oginv_field">Player</div><div class="oginv_field">Metal</div><div class="oginv_field">Crystal</div><div class="oginv_field">Deut</div><div class="oginv_field">Last Trade</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>History</h2></div><div class="oginv_content"><div id="oginv_info_raw" data-state="init"></div></div></div></div>')
+                                .after('<div class="oginv_page" id="oginv_setting_page"><div class="oginv_info_banner"><h2>Settings</h2></div><div class="oginv_row"><div class="oginv_label"><h2>Partner List</h2></div><div class="oginv_content"><div id="oginv_contract_list"></div><a id="oginv_btn_save_setting" class="btn_blue">Save</a></div></div><div class="oginv_row"><div class="oginv_label"><h2>New Partner</h2></div><div class="oginv_content"><input class="textInput oginv_form" type="search" class="oginv_form" id="oginv_input_search_player" placeholder="Player Name" /><a class="btn_blue oginv_form" id="oginv_btn_search_player">Search</a><a class="btn_blue oginv_form" id="oginv_btn_search_reset">Search Reset</a><div id="oginv_search_result"></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>Control Panel</h2></div><div class="oginv_content"><div class="oginv_table"><div class="oginv_data"><div class="oginv_field"><a class="btn_blue" id="oginv_btn_recal">Recalculate</a></div><div class="oginv_field"><a class="btn_blue" id="oginv_btn_reset_all">Reset records and statistics</a></div></div></div></div></div></div>')
                                 .siblings('.oginv_page').css('display', 'none');
             
             //styling
