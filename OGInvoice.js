@@ -233,6 +233,7 @@
                 var clrStr = $(m).text().replace(/(\s)+/g,'$1');
                 var abstract = invoice_pattern.exec(clrStr);
                 if(abstract){
+                    $(m).remove('a.fright')
                     var invoice = new Invoice($(m).data('msgId'), abstract[1], abstract[2], $($(m).find('.player').attr('title').replace(/玩家\:[^\|]*\|/, '')).find('.sendMail.tooltip').data('playerid'), abstract[3], abstract[4], abstract[5], abstract[6], abstract[7], abstract[8], $(m).html());
                     oginv.push(invoice);
                 }
