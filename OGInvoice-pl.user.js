@@ -2,7 +2,7 @@
 // @name OGInvoice (Polish)
 // @namespace https://github.com/momocow/OGInvoice
 // @description OGame: Trade Tracker
-// @version 3.0.1-polska.2
+// @version 3.0.1-polska.3
 // @author MomoCow
 // @supportURL https://github.com/momocow/OGInvoice/issues
 // @updateURL https://raw.githubusercontent.com/momocow/OGInvoice/master/OGInvoice-pl.user.js
@@ -371,7 +371,7 @@
                           $(".oginv_to_contract").on("click", function(e){
                               var uid = $(e.target).data("oginv-uid"),
                                   udata = $(e.target).parents("tr").find('.userName').text().trim();
-                              $("body").append("<div class='oginv_overlay' id='oginv_overlay_to_contract' title='New Partner'><form><fieldset><label for='oginv_input_contract_day'>Trade on every</label><select class='oginv_select' id='oginv_input_contract_day'><option value='0' selected>Sunday</option><option value='1'>Monday</option><option value='2'>Tuesday</option><option value='3'>Wednesday</option><option value='4'>Thursday</option><option value='5'>Friday</option><option value='6'>Saturday</option><option value='-1'>Disable weekly tracker</option></select><label for='oginv_input_contract_amount'>Materials per week</label><input type='text' id='oginv_input_contract_amount' value='0'></fieldset></form></div>");
+                              $("body").append("<div class='oginv_overlay' id='oginv_overlay_to_contract' title='New Partner Contract'><form><fieldset><label for='oginv_input_contract_day'>Trade on every</label><select class='oginv_select' id='oginv_input_contract_day'><option value='0' selected>Sunday</option><option value='1'>Monday</option><option value='2'>Tuesday</option><option value='3'>Wednesday</option><option value='4'>Thursday</option><option value='5'>Friday</option><option value='6'>Saturday</option><option value='-1'>Disable weekly tracker</option></select><label for='oginv_input_contract_amount'>Materials per week</label><input type='text' id='oginv_input_contract_amount' value='0'></fieldset></form></div>");
                               $("#oginv_input_contract_amount").on("keyup", function(e){$(e.target).val(oginv.int2res($(e.target).val().replace(/[^\d]/g, '')));});
                               $("#oginv_input_contract_day").css({"width":"200px"}).on("change", function(e){
                                 if($("#oginv_input_contract_day").val() == -1) $("#oginv_input_contract_amount").prop("disabled", true);
