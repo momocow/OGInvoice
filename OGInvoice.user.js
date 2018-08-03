@@ -5,7 +5,7 @@
 // @version 3.0.1
 // @author MomoCow
 // @supportURL https://github.com/momocow/OGInvoice/issues
-// @updateURL https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js
+// @updateURL https://raw.githubusercontent.com/momocow/OGInvoice/master/OGInvoice.user.js
 // @include https://*.ogame.gameforge.com/game/index.php?*
 // @run-at document-end
 // ==/UserScript==

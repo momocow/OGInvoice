@@ -1,11 +1,11 @@
 // ==UserScript==
-// @name OGInvoice
+// @name OGInvoice (Polish)
 // @namespace https://github.com/momocow/OGInvoice
 // @description OGame: Trade Tracker
-// @version 3.0.1-polska.1
+// @version 3.0.1-polska.2
 // @author MomoCow
 // @supportURL https://github.com/momocow/OGInvoice/issues
-// @updateURL https://gist.githubusercontent.com/momocow/bf932d571dcad386193224ecd6e86d5c/raw/OGInvoice.js
+// @updateURL https://raw.githubusercontent.com/momocow/OGInvoice/master/OGInvoice-pl.user.js
 // @include https://s*-pl.ogame.gameforge.com/game/index.php?*
 // @run-at document-end
 // ==/UserScript==
