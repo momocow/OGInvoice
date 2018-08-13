@@ -3,15 +3,12 @@
 
 ## 安裝方法
 1. 使用可加入自定義腳本的瀏覽器插件
-  - Chrome [TamperMonkey] (https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
-  - Firefox [TamperMonkey] (https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
+  - Chrome [TamperMonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
+  - Firefox [TamperMonkey](https://addons.mozilla.org/en-US/firefox/addon/tampermonkey/)
 
-2. 匯入腳本
-  1. 安裝好\*Monkey之後進入**設定匯入匯出工具**頁面 `chrome-extension://dhdgffkkebhmkfjojejmpbldmpobfkfo/options.html#nav=utils`  
-  ![設定匯入匯出工具](http://i.imgur.com/92ceugE.png)
+2. 請使用安裝了TamperMonkey之瀏覽器點擊連結
+> [**一鍵安裝**](https://github.com/momocow/OGInvoice/raw/master/OGInvoice.user.js)
 
-  2. 在URL貼上: `https://github.com/momocow/OGInvoice/raw/master/OGInvoice.user.js`
-  ![URL](http://i.imgur.com/rytQdEl.png)
 
 ## 自動更新
 1. 點擊「檢查使用者腳本更新」即可
