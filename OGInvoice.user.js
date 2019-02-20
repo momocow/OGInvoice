@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name OGInvoice
+// @name OGInvoice test
 // @namespace https://github.com/momocow/OGInvoice
 // @description OGame: Trade Tracker
 // @version 3.0.1
@@ -17,12 +17,13 @@
     function OGInv() {
 		//DATA 
         this.calQueue = [];
-        this.info = {name: "OGInvoice", version: '3.0.1', author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], weekly:[], storage: [], setting:{}};
+        this.info = {name: "OGInvoice", version: '3.0.1', author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], weekly:[], period:[], storage:[], setting:{}};
 		
 		//init
 		var sloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage'));
         var cloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic'));
         var wloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_weekly'));
+        var ploaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_period'));
         var stloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_setting'));
 		if(sloaded){
             this.info.storage = sloaded;
@@ -33,8 +34,14 @@
         if(wloaded){
             this.info.weekly = wloaded;
         }
+        if(ploaded){
+            this.info.period = ploaded;
+        }
         if(stloaded){
             this.info.setting = stloaded;
+        }
+        if(this.info.setting.range === undefined){
+            this.info.setting.range = "30";
         }
         
 		//METHOD
@@ -54,8 +61,10 @@
 		this.reset = function(){
 			localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic');
 			localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage');
+			localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_period');
             this.info.storage = [];
             this.info.statistic = [];
+            this.info.period = [];
 			this.refreshPanel();
 		};
 		
@@ -136,6 +145,7 @@
                 localStorage.setItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic', JSON.stringify(this.info.statistic));
                 localStorage.setItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage', JSON.stringify(this.info.storage));
                 localStorage.setItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_weekly', JSON.stringify(this.info.weekly));
+                localStorage.setItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_period', JSON.stringify(this.info.period));
                 this.calQueue = [];
             }
             return this;
@@ -152,6 +162,13 @@
                 return (date >= contract_day);
             }
             return false;
+        };
+        
+        this.is_under_period_contract = function(date){
+            var today = new Date(new Date().setHours(0,0,0,0));
+            var start_day = new Date(today.getTime()-this.info.setting['range']*86400000);
+            date = new Date(date.replace(/(\d{1,2})\.(\d{1,2})\.(\d{4})/,'$3 $2 $1')).getTime();
+            return (date >= start_day);
         };
 		
         this.get_contract_day = function (src){
@@ -189,19 +206,19 @@
                     
                     //weekly statistic
                     logged = false;
+                    
                     if(this.is_under_weekly_contract(this.calQueue[sidx].info.src, this.calQueue[sidx].info.date)){
                         var contract_day = this.get_contract_day(this.calQueue[sidx].info.src);
                         contract_day = contract_day.getDate() + ' ' + (contract_day.getMonth()+1) + ' ' + contract_day.getFullYear();
-                        
+                        let timestamp3, timestamp4;
                         for(var widx in this.info.weekly){
                             if(this.info.weekly[widx].info.src == this.calQueue[sidx].info.src){
                                 if(contract_day !== this.info.weekly[widx].info.cdate){
                                     this.info.weekly.splice(widx, 1);
                                     break;
                                 }
-                                
-							    var timestamp3 = this.info.weekly[widx].info.date + ' ' + this.info.weekly[widx].info.time,
-							        timestamp4 = this.calQueue[sidx].info.date + ' ' + this.calQueue[sidx].info.time;
+							    timestamp3 = this.info.weekly[widx].info.date + ' ' + this.info.weekly[widx].info.time;
+							    timestamp4 = this.calQueue[sidx].info.date + ' ' + this.calQueue[sidx].info.time;
                                 logged = true;
                                 this.info.weekly[widx].info.name = this.calQueue[sidx].info.name;
 					    		this.info.weekly[widx].info.date = this.latest_datetime([timestamp3, timestamp4]).date;
@@ -213,6 +230,36 @@
                         }
                         if(!logged) this.info.weekly.push(new Invoice(this.calQueue[sidx].info.src, this.calQueue[sidx].info.date, this.calQueue[sidx].info.time, this.calQueue[sidx].info.src, this.calQueue[sidx].info.name, undefined, undefined, this.calQueue[sidx].info.metal, this.calQueue[sidx].info.crystal, this.calQueue[sidx].info.deut, undefined).set('udate', now[0]).set('utime', now[1]).set('cdate', contract_day));
                     }
+
+                    //period statistic
+                    logged = false;
+                    if(this.is_under_period_contract(this.calQueue[sidx].info.date)){
+                        var today = new Date(new Date().setHours(0,0,0,0));
+                        var start_day = new Date(today.getTime()-this.info.setting['range']*86400000);
+                        start_day = start_day.getDate() + ' ' + (start_day.getMonth()+1) + ' ' + start_day.getFullYear();
+                        let timestamp3, timestamp4;
+                        for(var pidx in this.info.period){
+                            if(this.info.period[pidx].info.src == this.calQueue[sidx].info.src){
+                                if(start_day !== this.info.period[pidx].info.sdate){
+                                    this.info.period.splice(pidx, 1);
+                                    break;
+                                }
+                                timestamp3 = this.info.period[pidx].info.date + ' ' + this.info.period[pidx].info.time;
+                                timestamp4 = this.calQueue[sidx].info.date + ' ' + this.calQueue[sidx].info.time;
+                                logged = true;
+                                this.info.period[pidx].info.name = this.calQueue[sidx].info.name;
+                                this.info.period[pidx].info.date = this.latest_datetime([timestamp3, timestamp4]).date;
+                                this.info.period[pidx].info.time = this.latest_datetime([timestamp3, timestamp4]).time;
+                                this.info.period[pidx].info.metal = this.int2res(this.res2int(this.info.period[pidx].info.metal) + this.res2int(this.calQueue[sidx].info.metal));
+                                this.info.period[pidx].info.crystal = this.int2res(this.res2int(this.info.period[pidx].info.crystal) + this.res2int(this.calQueue[sidx].info.crystal));
+                                this.info.period[pidx].info.deut = this.int2res(this.res2int(this.info.period[pidx].info.deut) + this.res2int(this.calQueue[sidx].info.deut));
+                            }
+                        }
+                        if(!logged) this.info.period.push(new Invoice(this.calQueue[sidx].info.src, this.calQueue[sidx].info.date, this.calQueue[sidx].info.time, this.calQueue[sidx].info.src, this.calQueue[sidx].info.name, undefined, undefined, this.calQueue[sidx].info.metal, this.calQueue[sidx].info.crystal, this.calQueue[sidx].info.deut, undefined).set('udate', now[0]).set('utime', now[1]).set('sdate', start_day));
+                    }
+
+
+
                 }
             }
 
@@ -222,6 +269,7 @@
         this.recalculate = function(){
             this.info.statistic = [];
             this.info.weekly = [];
+            this.info.period = [];
             this.calQueue = [];
             this.calQueue = this.info.storage.slice();
             return this.calculate();
@@ -258,6 +306,30 @@
             }
             else{
                 if(!$("#oginv_contract_statistic").parents(".oginv_content").find('.noData').length) $('#oginv_contract_statistic').after('<div class="noData">- 無資料 -</div>');
+            }
+
+            //show period statistic
+            $("#oginv_info_period .oginv_data").remove();
+            if($(this.info.period).size() > 0){
+			    for(var idx in this.info.period){
+                    var is_contracted = '';
+                    let prod;
+                    if((typeof this.info.setting['u'+this.info.period[idx].info.src]) === "undefined"){
+                        prod = '---';
+                    }
+                    else{
+                        if((typeof this.info.setting['u'+this.info.period[idx].info.src].production) === "undefined"){
+                            this.info.setting['u'+this.info.period[idx].info.src].production = "0";
+                        }
+                        prod = this.int2res(this.res2int(this.info.setting['u'+this.info.period[idx].info.src].production)*this.info.setting.range);
+                    }
+                    
+                    if(this.info.setting['u'+this.info.period[idx].info.src]) is_contracted = 'oginv_contracted';
+                    $('#oginv_info_period').append('<div class="oginv_data ' + is_contracted + '" title="最後更新：'+this.info.period[idx].info.udate+' '+this.info.period[idx].info.utime+'"><div class="oginv_field"><a href="/game/index.php?page=highscore&searchRelId=' + this.info.period[idx].info.src + '">'+this.info.period[idx].info.name+'</a></div><div class="oginv_field">'+this.info.period[idx].info.metal+'</div><div class="oginv_field">'+this.info.period[idx].info.crystal+'</div><div class="oginv_field">'+this.info.period[idx].info.deut+'</div><div class="oginv_field">'+prod+'</div></div>');
+                }
+            }
+            else{
+                if(!$("#oginv_info_period").parents(".oginv_content").find('.noData').length) $('#oginv_info_total').after('<div class="noData">- 無資料 -</div>');
             }
             
             //show statistic
@@ -307,14 +379,14 @@
             //re-styling
             $('.oginv_data, .oginv_data_title').css({'display':'table-row'});
             $('.oginv_field').css({'display':'table-cell', 'padding':'7px 22px 7px 22px'});
-            $('#oginv_info_total .oginv_data, #oginv_info_total .oginv_field').css({'border': '1px solid #6f6f6f'});
+            $('#oginv_info_total .oginv_data, #oginv_info_total .oginv_field, #oginv_info_period .oginv_data, #oginv_info_period .oginv_field').css({'border': '1px solid #6f6f6f'});
             $('#oginv_contract_statistic .oginv_data, #oginv_contract_statistic .oginv_field').css({'border': '1px solid #6f6f6f'});
-            $('#oginv_info_total .oginv_data:not(.oginv_contracted), #oginv_info_total .oginv_data:not(.oginv_contracted) .oginv_field').hover(function(e){if($(this).hasClass("oginv_data")) $(this).css({"background-color":"rgb(42, 53, 68)", "color": "#f4ff5e"}).find("a").css({"color": "#f4ff5e"});}, function(e){if($(this).hasClass("oginv_data")) $(this).css({"background-color":"transparent", "color": "white"}).find("a").css({"color": "white"});});
-            $('#oginv_info_total .oginv_data.oginv_contracted, #oginv_info_total .oginv_data.oginv_contracted .oginv_field').hover(function(e){if($(this).hasClass("oginv_data")) $(this).css({"background-color":"rgb(42, 53, 68)", "color": "#f4ff5e"}).find("a").css({"color": "#f4ff5e"});}, function(e){if($(this).hasClass("oginv_data")) $(this).css({"background-color":"transparent", "color": "rgb(63, 197, 99)"}).find("a").css({"color": "rgb(63, 197, 99)"});});
+            $('#oginv_info_total .oginv_data:not(.oginv_contracted), #oginv_info_total .oginv_data:not(.oginv_contracted) .oginv_field, #oginv_info_period .oginv_data:not(.oginv_contracted), #oginv_info_period .oginv_data:not(.oginv_contracted) .oginv_field').hover(function(e){if($(this).hasClass("oginv_data")) $(this).css({"background-color":"rgb(42, 53, 68)", "color": "#f4ff5e"}).find("a").css({"color": "#f4ff5e"});}, function(e){if($(this).hasClass("oginv_data")) $(this).css({"background-color":"transparent", "color": "white"}).find("a").css({"color": "white"});});
+            $('#oginv_info_total .oginv_data.oginv_contracted, #oginv_info_total .oginv_data.oginv_contracted .oginv_field, #oginv_info_period .oginv_data.oginv_contracted, #oginv_info_period .oginv_data.oginv_contracted .oginv_field').hover(function(e){if($(this).hasClass("oginv_data")) $(this).css({"background-color":"rgb(42, 53, 68)", "color": "#f4ff5e"}).find("a").css({"color": "#f4ff5e"});}, function(e){if($(this).hasClass("oginv_data")) $(this).css({"background-color":"transparent", "color": "rgb(63, 197, 99)"}).find("a").css({"color": "rgb(63, 197, 99)"});});
             $('#oginv_contract_statistic .oginv_data, #oginv_contract_statistic .oginv_data .oginv_field').hover(function(e){if($(this).hasClass("oginv_data")) $(this).css({"background-color":"rgb(42, 53, 68)", "color": "#f4ff5e"}).find("a").css({"color": "#f4ff5e"});}, function(e){if($(this).hasClass("oginv_data")) $(this).css({"background-color":"transparent", "color": "white"}).find("a").css({"color": "white"});});
             $("#oginv_info_raw").accordion({collapsible: true, heightStyle: "content", active: false});
             $("#oginv_info_raw .oginv_info_raw_player").accordion({collapsible: true, heightStyle: "content", active: false});
-            $("#oginv_info_total a:link, #oginv_info_total a:visited").css({"text-decoration": "none", "color":"white"});
+            $("#oginv_info_total a:link, #oginv_info_total a:visited, #oginv_info_period a:link, #oginv_info_period a:visited").css({"text-decoration": "none", "color":"white"});
             $("#oginv_contract_statistic a:link, #oginv_contract_statistic a:visited").css({"text-decoration": "none", "color":"white"});
             $(".oginv_contracted, .oginv_contracted a").css({"color": "rgb(63, 197, 99)"});
             $(".oginv_contracted_res").each(function(i, e){
@@ -350,6 +422,11 @@
             return this.recalculate().save();
         };
         
+        this.set_range = function(range){            
+            this.info.setting.range = range;
+            return this.recalculate().save();
+        };
+        
         this.ajax_search = function(m, p){
             $.ajax({url:$(location).prop("protocol") + "//" + $(location).prop("host") +"/game/index.php?page=search",data:{searchValue:$('#oginv_input_search_player').val(),method:m,currentSite:p,ajax:"1"},
                         success:function(data){
@@ -371,8 +448,9 @@
                             $(".oginv_to_contract").on("click", function(e){
                                 var uid = $(e.target).data("oginv-uid"),
                                     udata = $(e.target).parents("tr").find('.userName').text().trim();
-                                $("body").append("<div class='oginv_overlay' id='oginv_overlay_to_contract' title='新增油商'><form><fieldset><label for='oginv_input_contract_day'>每周交易日</label><select class='oginv_select' id='oginv_input_contract_day'><option value='0' selected>星期日</option><option value='1'>星期一</option><option value='2'>星期二</option><option value='3'>星期三</option><option value='4'>星期四</option><option value='5'>星期五</option><option value='6'>星期六</option><option value='-1'>不追蹤交易週期</option></select><label for='oginv_input_contract_amount'>每周交易量</label><input type='text' id='oginv_input_contract_amount' value='0'></fieldset></form></div>");
+                                $("body").append("<div class='oginv_overlay' id='oginv_overlay_to_contract' title='新增油商'><form><fieldset><label for='oginv_input_contract_day'>每周交易日</label><select class='oginv_select' id='oginv_input_contract_day'><option value='0' selected>星期日</option><option value='1'>星期一</option><option value='2'>星期二</option><option value='3'>星期三</option><option value='4'>星期四</option><option value='5'>星期五</option><option value='6'>星期六</option><option value='-1'>不追蹤交易週期</option></select><label for='oginv_input_contract_amount'>每周交易量</label><input type='text' id='oginv_input_contract_amount' value='0'><label for='oginv_input_production'>每日重氫產量</label><input type='text' id='oginv_input_production' value='0'></fieldset></form></div>");
                                 $("#oginv_input_contract_amount").on("keyup", function(e){$(e.target).val(oginv.int2res($(e.target).val().replace(/[^\d]/g, '')));});
+                                $("#oginv_input_production").on("keyup", function(e){$(e.target).val(oginv.int2res($(e.target).val().replace(/[^\d]/g, '')));});
                                 $("#oginv_input_contract_day").css({"width":"200px"}).on("change", function(e){
                                   if($("#oginv_input_contract_day").val() == -1) $("#oginv_input_contract_amount").prop("disabled", true);
                                   else if ($("#oginv_input_contract_amount").prop("disabled")) $("#oginv_input_contract_amount").prop("disabled", false)
@@ -384,14 +462,16 @@
                                 $("#oginv_overlay_to_contract").dialog({autoOpen: false, height: 280, width: 350, modal: true, 
                                                                         buttons:{"新增": function(){
                                                                             var cd = $("#oginv_input_contract_day").val(),
-                                                                                ca = $("#oginv_input_contract_amount").val();
+                                                                                ca = $("#oginv_input_contract_amount").val(),
+                                                                                hp = $("#oginv_input_production").val();
                                                                             $("#oginv_overlay_to_contract").dialog("close");
-                                                                            oginv.change_setting(uid, {contract_day: cd, contract_amount: ca, partner: udata}).refreshSettingPanel();
+                                                                            oginv.change_setting(uid, {contract_day: cd, contract_amount: ca, production: hp, partner: udata}).refreshSettingPanel();
                                                                         }}, 
                                                                         Cancel: function(){$("#oginv_overlay_to_contract").dialog( "close" );},
                                                                         close: function(){
                                                                                    $("#oginv_input_contract_day option:eq(0)").prop("selected", true);
                                                                                    $("#oginv_input_contract_amount").val(0);
+                                                                                   $("#oginv_input_production").val(0);
                                                                                    $(this).remove();
                                                                         }
                                 }).dialog("open");
@@ -409,11 +489,17 @@
         
         this.refreshSettingPanel = function(){
             $("#oginv_contract_list *").remove();
-            $("#oginv_contract_list").append("<table><tr><th>#</th><th>玩家名稱</th><th>每周交易量</th><th>每周交易日</th><th>註銷</th></tr></table>");
+            $("#oginv_contract_list").append("<table><tr><th>#</th><th>玩家名稱</th><th>每周交易量</th><th>每日重氫產量</th><th>每周交易日</th><th>註銷</th></tr></table>");
             var count = 0;
             for(var settingidx in this.info.setting){
+                if(typeof this.info.setting[settingidx] === "string"){
+                    continue;
+                }
                 count ++;
-                $("#oginv_contract_list table").append("<tr id='oginv_contract_data_"+ settingidx + "' data-uidx='"+ settingidx + "'><td>" + count + "</td><td class='oginv_contract_partner'><a href='/game/index.php?page=highscore&searchRelId=" + settingidx.replace(/u/, '') + "'>" + this.info.setting[settingidx].partner + "</a></td><td><input type='text' class='oginv_contract_table_amount' id='oginv_contract_table_amount_" + settingidx + "' value='" + this.info.setting[settingidx].contract_amount + "'></td><td><select class='oginv_contract_table_day' id='oginv_contract_table_day_" + settingidx + "'><option value='0'>星期日</option><option value='1'>星期一</option><option value='2'>星期二</option><option value='3'>星期三</option><option value='4'>星期四</option><option value='5'>星期五</option><option value='6'>星期六</option><option value='-1'>不追蹤交易週期</option></select></td><td><a class='oginv_btn_contract_remove' href='javascript:void(0)' data-oginv-uid='" + settingidx + "'><span class='oginv_img_contract_remove' id='oginv_img_contract_remove_" + settingidx + "' data-oginv-uid='" + settingidx + "'></span></a></td></tr>");
+                if((typeof this.info.setting[settingidx].production) === "undefined"){
+                    this.info.setting[settingidx].production = 0;
+                }
+                $("#oginv_contract_list table").append("<tr id='oginv_contract_data_"+ settingidx + "' data-uidx='"+ settingidx + "'><td>" + count + "</td><td class='oginv_contract_partner'><a href='/game/index.php?page=highscore&searchRelId=" + settingidx.replace(/u/, '') + "'>" + this.info.setting[settingidx].partner + "</a></td><td><input type='text' class='oginv_contract_table_amount' id='oginv_contract_table_amount_" + settingidx + "' value='" + this.info.setting[settingidx].contract_amount + "' size='10'></td><td><input type='text' class='oginv_contract_table_production' id='oginv_contract_table_production" + settingidx + "' value='" + this.info.setting[settingidx].production + "'size='10'></td><td><select class='oginv_contract_table_day' id='oginv_contract_table_day_" + settingidx + "'><option value='0'>星期日</option><option value='1'>星期一</option><option value='2'>星期二</option><option value='3'>星期三</option><option value='4'>星期四</option><option value='5'>星期五</option><option value='6'>星期六</option><option value='-1'>不追蹤交易週期</option></select></td><td><a class='oginv_btn_contract_remove' href='javascript:void(0)' data-oginv-uid='" + settingidx + "'><span class='oginv_img_contract_remove' id='oginv_img_contract_remove_" + settingidx + "' data-oginv-uid='" + settingidx + "'></span></a></td></tr>");
                 $("#oginv_contract_table_day_" + settingidx + ' option[value=' + this.info.setting[settingidx].contract_day + ']').attr("selected", true);
                 $("#oginv_contract_table_day_" + settingidx).ogameDropDown();
                 $("#oginv_img_contract_remove_" + settingidx).css({"top": (45+(count-1)*27)+"px"});
@@ -424,8 +510,12 @@
                 $(e.target).val(oginv.int2res(parseInt($(e.target).val().replace(/[^\d]/g, ''))));
                 $(this).parents("tr").addClass("oginv_flag_value_changed");
             });
+            $(".oginv_contract_table_production").css({"width":"90%"}).on("keyup", function(e){
+                $(e.target).val(oginv.int2res(parseInt($(e.target).val().replace(/[^\d]/g, ''))));
+                $(this).parents("tr").addClass("oginv_flag_value_changed");
+            });
             $(".oginv_img_contract_remove").on("click", function(e){oginv.change_setting($(e.target).data('oginv-uid').replace(/u/, ''), undefined).refreshSettingPanel();});
-            $(".oginv_contract_table_day").css({"width":"200px"}).on("change", function(){$(this).parents("tr").addClass("oginv_flag_value_changed");});
+            $(".oginv_contract_table_day").css({"width":"120px"}).on("change", function(){$(this).parents("tr").addClass("oginv_flag_value_changed");});
             $(".oginv_img_contract_remove").css({'background': 'url(https://gf1.geo.gfsrv.net/cdn96/18e4684df27114667e11541e5b2ef8.png) -208px -71px no-repeat', 'height': '15px', 'width': '15px', "position":"absolute", "right":"44px"});
             $("#oginv_contract_list a:link, #oginv_contract_list a:visited").css({"text-decoration": "none", "color":"white"});
             
@@ -486,8 +576,8 @@
         this.showPanel = function(){
             $('#menuTable').append('<li><span class="menu_icon"><a id="oginv_btn_setting" class="tooltipRight" title="設定"><div id="oginv_img_setting"></div></span><a id="oginv_btn_info" class="menubutton" href="javascript:void(0)"><span class="textlabel">交易統計</span></a></li>');
             //DOM contructing
-            $('#contentWrapper').after('<div class="oginv_page" id="oginv_info_page"><div class="oginv_info_banner"><h2>交易統計</h2></div><div class="oginv_row"><div class="oginv_label"><h2>每周交易追蹤</h2></div><div class="oginv_content"><div id="oginv_contract_statistic"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">最後交易時間</div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>累計交易量</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">最後交易時間</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>歷史紀錄</h2></div><div class="oginv_content"><div id="oginv_info_raw" data-state="init"></div></div></div></div>')
-                                .after('<div class="oginv_page" id="oginv_setting_page"><div class="oginv_info_banner"><h2>設定</h2></div><div class="oginv_row"><div class="oginv_label"><h2>油商名單</h2></div><div class="oginv_content"><div id="oginv_contract_list"></div><a id="oginv_btn_save_setting" class="btn_blue">保存</a></div></div><div class="oginv_row"><div class="oginv_label"><h2>新增油商</h2></div><div class="oginv_content"><input class="textInput oginv_form" type="search" class="oginv_form" id="oginv_input_search_player" placeholder="玩家名稱" /><a class="btn_blue oginv_form" id="oginv_btn_search_player">搜尋</a><a class="btn_blue oginv_form" id="oginv_btn_search_reset">重設搜尋</a><div id="oginv_search_result"></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>控制台</h2></div><div class="oginv_content"><div class="oginv_table"><div class="oginv_data"><div class="oginv_field"><a class="btn_blue" id="oginv_btn_recal">重新計算</a></div><div class="oginv_field"><a class="btn_blue" id="oginv_btn_reset_all">重設所有交易紀錄和統計資料</a></div></div></div></div></div></div>')
+            $('#contentWrapper').after('<div class="oginv_page" id="oginv_info_page"><div class="oginv_info_banner"><h2>交易統計</h2></div><div class="oginv_row"><div class="oginv_label"><h2>每周交易追蹤</h2></div><div class="oginv_content"><div id="oginv_contract_statistic"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">最後交易時間</div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>'+this.info.setting.range+'天內交易量</h2></div><div class="oginv_content"><div id="oginv_info_period"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">'+this.info.setting.range+'天重氫產量</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>累計交易量</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">最後交易時間</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>歷史紀錄</h2></div><div class="oginv_content"><div id="oginv_info_raw" data-state="init"></div></div></div></div>')
+                                .after('<div class="oginv_page" id="oginv_setting_page"><div class="oginv_info_banner"><h2>設定</h2></div><div class="oginv_row"><div class="oginv_label"><h2>油商名單</h2></div><div class="oginv_content"><div id="oginv_contract_list"></div><a id="oginv_btn_save_setting" class="btn_blue">保存</a></div></div><div class="oginv_row"><div class="oginv_label"><h2>新增油商</h2></div><div class="oginv_content"><input class="textInput oginv_form" type="search" class="oginv_form" id="oginv_input_search_player" placeholder="玩家名稱" /><a class="btn_blue oginv_form" id="oginv_btn_search_player">搜尋</a><a class="btn_blue oginv_form" id="oginv_btn_search_reset">重設搜尋</a><div id="oginv_search_result"></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>控制台</h2></div><div class="oginv_content"><div class="oginv_table"><div class="oginv_data"><div class="oginv_field">統計日數:<input class="textInput oginv_form" type="search" id="oginv_input_range" size="2" value="'+this.info.setting.range+'"></div><div class="oginv_field"><a class="btn_blue oginv_form" id="oginv_btn_set_range">修改</a></div></div><div class="oginv_data"><div class="oginv_field"><a class="btn_blue" id="oginv_btn_recal">重新計算</a></div><div class="oginv_field"><a class="btn_blue" id="oginv_btn_reset_all">重設所有交易紀錄和統計資料</a></div></div></div></div></div></div>')
                                 .siblings('.oginv_page').css('display', 'none');
             
             //styling
@@ -499,6 +589,7 @@
             $('.oginv_label h2').css({"text-align":"center", "color":"#6f9fc8", "font":"700 12px/28px Verdana,Arial,Helvetica,sans-serif"});
             $('.oginv_content').css({"background":"url(//gf1.geo.gfsrv.net/cdn03/db530b4ddcbe680361a6f837ce0dd7.gif) repeat-y", "margin":"0", "min-height":"115px", "padding":"10px 0", "position":"relative", "text-align":"center"});
             $('#oginv_info_total').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse','border': '1px solid #6f6f6f', 'width': '600px'});
+            $('#oginv_info_period').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse','border': '1px solid #6f6f6f', 'width': '600px'});
 			$('#oginv_contract_statistic').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse','border': '1px solid #6f6f6f', 'width': '600px'});
             $('.oginv_table').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse'});
             $('.oginv_data, .oginv_data_title').css({'display':'table-row'});
@@ -522,10 +613,14 @@
             });
             $('#oginv_btn_save_setting').on('click', function(){
                 $(".oginv_flag_value_changed").each(function(i, e){
-                    oginv.change_setting($(e).data("uidx").replace(/u/, ''), {contract_day: $(e).find(".oginv_contract_table_day").val(), contract_amount: $(e).find(".oginv_contract_table_amount").val(), partner: $(e).find(".oginv_contract_partner").text()}).refreshSettingPanel();
+                    oginv.change_setting($(e).data("uidx").replace(/u/, ''), {contract_day: $(e).find(".oginv_contract_table_day").val(), contract_amount: $(e).find(".oginv_contract_table_amount").val(), production: $(e).find(".oginv_contract_table_production").val(), partner: $(e).find(".oginv_contract_partner").text()}).refreshSettingPanel();
                 });
                 
             });
+            $('#oginv_btn_set_range').on('click', function(){
+                oginv.set_range($("#oginv_input_range").val());
+            });
+
 
             $('#oginv_btn_info').on('click', function (){
                 if($('#oginv_info_page').css('display') !== 'none'){
