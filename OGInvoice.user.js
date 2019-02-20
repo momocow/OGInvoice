@@ -1,5 +1,5 @@
 // ==UserScript==
-// @name OGInvoice test
+// @name OGInvoice
 // @namespace https://github.com/momocow/OGInvoice
 // @description OGame: Trade Tracker
 // @version 3.0.1
