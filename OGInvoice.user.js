@@ -15,17 +15,17 @@
 
     //Script Object
     function OGInv() {
-		//DATA 
+        //DATA 
         this.calQueue = [];
         this.info = {name: "OGInvoice", version: '3.0.1', author: "MomoCow", site: "https://github.com/momocow", description: "OGame: 自動追蹤/統計 交易資源量", statistic:[], weekly:[], period:[], storage:[], setting:{}};
-		
-		//init
-		var sloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage'));
+        
+        //init
+        var sloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage'));
         var cloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic'));
         var wloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_weekly'));
         var ploaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_period'));
         var stloaded = JSON.parse(localStorage.getItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_setting'));
-		if(sloaded){
+        if(sloaded){
             this.info.storage = sloaded;
         }
         if(cloaded){
@@ -44,34 +44,34 @@
             this.info.setting.range = "30";
         }
         
-		//METHOD
+        //METHOD
         this.toString = function(){
             return JSON.stringify(this.info);
         };
-		
-		this.update = function(){
-			var v = localStorage.getItem('oginv_version');
-			if(v && v === this.info.version){
-				return this;
-			}
-			localStorage.setItem('oginv_version', this.info.version);
-			return this;
-		};
-		
-		this.reset = function(){
-			localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic');
-			localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage');
-			localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_period');
+        
+        this.update = function(){
+            var v = localStorage.getItem('oginv_version');
+            if(v && v === this.info.version){
+                return this;
+            }
+            localStorage.setItem('oginv_version', this.info.version);
+            return this;
+        };
+        
+        this.reset = function(){
+            localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic');
+            localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_storage');
+            localStorage.removeItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_period');
             this.info.storage = [];
             this.info.statistic = [];
             this.info.period = [];
-			this.refreshPanel();
-		};
-		
+            this.refreshPanel();
+        };
+        
         this.res2int = function(str){
             return parseInt(str.replace(/,/g, ''));
         };
-		
+        
         this.int2res = function(int){
             var str = "", neg = '';
             if(int === 0) return '0';
@@ -92,20 +92,20 @@
             }
             return neg+str;
         };
-		
-		this.latest_datetime  = function(dtset){
-			dtset = $.map(dtset, function(value, idx){
-				return new Date(value.replace(/(\d{1,2})\.(\d{1,2})\.(\d{4}) (\d\d\:\d\d\:\d\d)/,'$3 $2 $1 $4'));
-			});
+        
+        this.latest_datetime  = function(dtset){
+            dtset = $.map(dtset, function(value, idx){
+                return new Date(value.replace(/(\d{1,2})\.(\d{1,2})\.(\d{4}) (\d\d\:\d\d\:\d\d)/,'$3 $2 $1 $4'));
+            });
 
-			var latest = null;
+            var latest = null;
             var lidx = -1;
-			for(var dt_idx in dtset){
-				if(latest === null || latest.getTime() < dtset[dt_idx].getTime()){
-					latest = dtset[dt_idx];
+            for(var dt_idx in dtset){
+                if(latest === null || latest.getTime() < dtset[dt_idx].getTime()){
+                    latest = dtset[dt_idx];
                     lidx = dt_idx;
-				}
-			}
+                }
+            }
             
             var rdate = '', rtime = '';
             if(latest.getDate() < 10) rdate += '0' + latest.getDate() + '.';
@@ -120,9 +120,9 @@
             else rtime += latest.getMinutes() + ':';
             if(latest.getSeconds() < 10) rtime += '0' + latest.getSeconds();
             else rtime += latest.getSeconds();
-			return {date: rdate, time: rtime, index:lidx};
-		};
-		
+            return {date: rdate, time: rtime, index:lidx};
+        };
+        
         this.push = function(item){
             for(var id in this.info.storage){
                 if(item.is(this.info.storage[id])){
@@ -134,12 +134,12 @@
             this.info.storage.push(item);
             return this;
         };
-		
+        
         this.pop = function(){
             this.storage.pop();
             return this;
         };
-		
+        
         this.save = function(){
             if($(this.calQueue).size()>0){
                 localStorage.setItem('oginv_' + (/s\d+\-[^\.]+/.exec(location.href)) + '_' + playerId + '_statistic', JSON.stringify(this.info.statistic));
@@ -170,7 +170,7 @@
             date = new Date(date.replace(/(\d{1,2})\.(\d{1,2})\.(\d{4})/,'$3 $2 $1')).getTime();
             return (date >= start_day);
         };
-		
+        
         this.get_contract_day = function (src){
             if(oginv.info.setting['u'+src] && this.info.setting['u'+src].contract_day >= 0){
                 var today = new Date(new Date().setHours(0,0,0,0)),
@@ -189,13 +189,13 @@
                     //total statistic
                     for(var cidx in this.info.statistic){
                         if(this.info.statistic[cidx].info.src == this.calQueue[sidx].info.src){
-							var timestamp1 = this.info.statistic[cidx].info.date + ' ' + this.info.statistic[cidx].info.time,
-							    timestamp2 = this.calQueue[sidx].info.date + ' ' + this.calQueue[sidx].info.time;
+                            var timestamp1 = this.info.statistic[cidx].info.date + ' ' + this.info.statistic[cidx].info.time,
+                                timestamp2 = this.calQueue[sidx].info.date + ' ' + this.calQueue[sidx].info.time;
                             logged = true;
                             this.info.statistic[cidx].info.name = this.calQueue[sidx].info.name;
                             this.info.statistic[cidx].info.udate = now[0];
                             this.info.statistic[cidx].info.utime = now[1];
-							this.info.statistic[cidx].info.date = this.latest_datetime([timestamp1, timestamp2]).date;
+                            this.info.statistic[cidx].info.date = this.latest_datetime([timestamp1, timestamp2]).date;
                             this.info.statistic[cidx].info.time = this.latest_datetime([timestamp1, timestamp2]).time;
                             this.info.statistic[cidx].info.metal = this.int2res(this.res2int(this.info.statistic[cidx].info.metal) + this.res2int(this.calQueue[sidx].info.metal));
                             this.info.statistic[cidx].info.crystal = this.int2res(this.res2int(this.info.statistic[cidx].info.crystal) + this.res2int(this.calQueue[sidx].info.crystal));
@@ -217,11 +217,11 @@
                                     this.info.weekly.splice(widx, 1);
                                     break;
                                 }
-							    timestamp3 = this.info.weekly[widx].info.date + ' ' + this.info.weekly[widx].info.time;
-							    timestamp4 = this.calQueue[sidx].info.date + ' ' + this.calQueue[sidx].info.time;
+                                timestamp3 = this.info.weekly[widx].info.date + ' ' + this.info.weekly[widx].info.time;
+                                timestamp4 = this.calQueue[sidx].info.date + ' ' + this.calQueue[sidx].info.time;
                                 logged = true;
                                 this.info.weekly[widx].info.name = this.calQueue[sidx].info.name;
-					    		this.info.weekly[widx].info.date = this.latest_datetime([timestamp3, timestamp4]).date;
+                                this.info.weekly[widx].info.date = this.latest_datetime([timestamp3, timestamp4]).date;
                                 this.info.weekly[widx].info.time = this.latest_datetime([timestamp3, timestamp4]).time;
                                 this.info.weekly[widx].info.metal = this.int2res(this.res2int(this.info.weekly[widx].info.metal) + this.res2int(this.calQueue[sidx].info.metal));
                                 this.info.weekly[widx].info.crystal = this.int2res(this.res2int(this.info.weekly[widx].info.crystal) + this.res2int(this.calQueue[sidx].info.crystal));
@@ -274,7 +274,7 @@
             this.calQueue = this.info.storage.slice();
             return this.calculate();
         };
-		
+        
         this.record = function(txt){
             $(txt).find('.msg').each(function(id, m){
                 var invoice_pattern = /由外來艦隊運送的資源\s(\d\d\.\d\d\.\d\d\d\d)\s(\d\d\:\d\d\:\d\d)\s來自\:\s太空監測\s來自\s(.+)\s\([^\[]+\[(\d\:\d{1,3}:\d{1,2})\]\)\s的一支艦隊正運送著資源到\s.+\s\[(\d\:\d{1,3}\:\d{1,2})\]\s\:金屬\:\s([\d,]+)\s單位,晶體\:\s([\d,]+)\s單位,重氫\:\s([\d,]+)\s單位/;
@@ -289,12 +289,12 @@
             
             return this;
         };
-		
-		this.refreshPanel = function(){
+        
+        this.refreshPanel = function(){
             //show contract statistic
             $("#oginv_contract_statistic .oginv_data").remove();
             if($(this.info.weekly).size() > 0){
-			    for(var widx in this.info.weekly){
+                for(var widx in this.info.weekly){
                     var contract_status = '---', contract_amount = this.res2int(this.info.setting['u'+this.info.weekly[widx].info.src].contract_amount);
                     if(contract_amount > 0){
                         contract_status = this.res2int(this.info.weekly[widx].info.deut) - contract_amount;
@@ -311,7 +311,7 @@
             //show period statistic
             $("#oginv_info_period .oginv_data").remove();
             if($(this.info.period).size() > 0){
-			    for(var idx in this.info.period){
+                for(var idx in this.info.period){
                     var is_contracted = '';
                     let prod;
                     if((typeof this.info.setting['u'+this.info.period[idx].info.src]) === "undefined"){
@@ -335,7 +335,7 @@
             //show statistic
             $("#oginv_info_total .oginv_data").remove();
             if($(this.info.statistic).size() > 0){
-			    for(var idx in this.info.statistic){
+                for(var idx in this.info.statistic){
                     var is_contracted = '';
                     if(this.info.setting['u'+this.info.statistic[idx].info.src]) is_contracted = 'oginv_contracted';
                     $('#oginv_info_total').append('<div class="oginv_data ' + is_contracted + '" title="最後更新：'+this.info.statistic[idx].info.udate+' '+this.info.statistic[idx].info.utime+'"><div class="oginv_field"><a href="/game/index.php?page=highscore&searchRelId=' + this.info.statistic[idx].info.src + '">'+this.info.statistic[idx].info.name+'</a></div><div class="oginv_field">'+this.info.statistic[idx].info.metal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.crystal+'</div><div class="oginv_field">'+this.info.statistic[idx].info.deut+'</div><div class="oginv_field">'+this.info.statistic[idx].info.date+' '+this.info.statistic[idx].info.time+'</div></div>');
@@ -409,7 +409,7 @@
             }
             
             return this;
-		};
+        };
         
         this.change_setting = function(uid, setting){
             $("#oginv_contract_data_" + uid).removeClass("oginv_flag_value_changed");
@@ -572,7 +572,7 @@
             $('#oginv_search_result *').remove();
             return this;
         };
-		
+        
         this.showPanel = function(){
             $('#menuTable').append('<li><span class="menu_icon"><a id="oginv_btn_setting" class="tooltipRight" title="設定"><div id="oginv_img_setting"></div></span><a id="oginv_btn_info" class="menubutton" href="javascript:void(0)"><span class="textlabel">交易統計</span></a></li>');
             //DOM contructing
@@ -590,7 +590,7 @@
             $('.oginv_content').css({"background":"url(//gf1.geo.gfsrv.net/cdn03/db530b4ddcbe680361a6f837ce0dd7.gif) repeat-y", "margin":"0", "min-height":"115px", "padding":"10px 0", "position":"relative", "text-align":"center"});
             $('#oginv_info_total').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse','border': '1px solid #6f6f6f', 'width': '600px'});
             $('#oginv_info_period').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse','border': '1px solid #6f6f6f', 'width': '600px'});
-			$('#oginv_contract_statistic').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse','border': '1px solid #6f6f6f', 'width': '600px'});
+            $('#oginv_contract_statistic').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse','border': '1px solid #6f6f6f', 'width': '600px'});
             $('.oginv_table').css({'display':'table', 'margin':'auto', 'border-collapse': 'collapse'});
             $('.oginv_data, .oginv_data_title').css({'display':'table-row'});
             $('.oginv_field').css({'display':'table-cell', 'padding':'7px 22px 7px 22px'});
@@ -600,7 +600,7 @@
             $("#oginv_btn_save_setting").css({"margin":"5px"});
             
             //event
-			$('#oginv_btn_recal').on('click', function(){oginv.recalculate().save().refreshPanel();});
+            $('#oginv_btn_recal').on('click', function(){oginv.recalculate().save().refreshPanel();});
             $('#oginv_btn_reset_all').on('click', function(){oginv.reset();});
             $('#oginv_input_search_player').on('change', function(){
                 oginv.ajax_search(2, 1);
@@ -686,10 +686,10 @@
             if(this.info.id && other.info.id) return (this.info.id === other.info.id);
             return false;
         };
-		this.set = function(index, value){
-			this.info[index] = value;
-			return this;
-		};
+        this.set = function(index, value){
+            this.info[index] = value;
+            return this;
+        };
     }
     
     //Script instance
@@ -703,7 +703,7 @@
                 oginv.update().record(tmp).calculate().save();
             }
         });
-	}
-		
-		oginv.showPanel();
+    }
+        
+        oginv.showPanel();
 })();
