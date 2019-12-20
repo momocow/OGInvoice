@@ -2,7 +2,7 @@
 // @name OGInvoice
 // @namespace https://github.com/momocow/OGInvoice
 // @description OGame: Trade Tracker
-// @version 3.0.1
+// @version 3.0.2
 // @author MomoCow
 // @supportURL https://github.com/momocow/OGInvoice/issues
 // @updateURL https://raw.githubusercontent.com/momocow/OGInvoice/master/OGInvoice.user.js
@@ -403,7 +403,7 @@
             
             if($('#oginv_info_page').css('display') == 'none'){
                 $("#oginv_btn_setting").addClass("active");
-                $('#contentWrapper').css('display', 'none');
+                $('#contentWrapper,#middle').css('display', 'none');
                 $('#oginv_setting_page').css('display', 'none');
                 $('#oginv_info_page').css('display', 'block');
             }
@@ -576,7 +576,7 @@
         this.showPanel = function(){
             $('#menuTable').append('<li><span class="menu_icon"><a id="oginv_btn_setting" class="tooltipRight" title="設定"><div id="oginv_img_setting"></div></span><a id="oginv_btn_info" class="menubutton" href="javascript:void(0)"><span class="textlabel">交易統計</span></a></li>');
             //DOM contructing
-            $('#contentWrapper').after('<div class="oginv_page" id="oginv_info_page"><div class="oginv_info_banner"><h2>交易統計</h2></div><div class="oginv_row"><div class="oginv_label"><h2>每周交易追蹤</h2></div><div class="oginv_content"><div id="oginv_contract_statistic"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">最後交易時間</div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>'+this.info.setting.range+'天內交易量</h2></div><div class="oginv_content"><div id="oginv_info_period"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">'+this.info.setting.range+'天重氫產量</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>累計交易量</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">最後交易時間</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>歷史紀錄</h2></div><div class="oginv_content"><div id="oginv_info_raw" data-state="init"></div></div></div></div>')
+            $('#contentWrapper,#middle').after('<div class="oginv_page" id="oginv_info_page"><div class="oginv_info_banner"><h2>交易統計</h2></div><div class="oginv_row"><div class="oginv_label"><h2>每周交易追蹤</h2></div><div class="oginv_content"><div id="oginv_contract_statistic"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">最後交易時間</div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>'+this.info.setting.range+'天內交易量</h2></div><div class="oginv_content"><div id="oginv_info_period"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">'+this.info.setting.range+'天重氫產量</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>累計交易量</h2></div><div class="oginv_content"><div id="oginv_info_total"><div class="oginv_data_title"><div class="oginv_field">玩家</div><div class="oginv_field">金屬</div><div class="oginv_field">晶體</div><div class="oginv_field">重氫</div><div class="oginv_field">最後交易時間</div></div></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>歷史紀錄</h2></div><div class="oginv_content"><div id="oginv_info_raw" data-state="init"></div></div></div></div>')
                                 .after('<div class="oginv_page" id="oginv_setting_page"><div class="oginv_info_banner"><h2>設定</h2></div><div class="oginv_row"><div class="oginv_label"><h2>油商名單</h2></div><div class="oginv_content"><div id="oginv_contract_list"></div><a id="oginv_btn_save_setting" class="btn_blue">保存</a></div></div><div class="oginv_row"><div class="oginv_label"><h2>新增油商</h2></div><div class="oginv_content"><input class="textInput oginv_form" type="search" class="oginv_form" id="oginv_input_search_player" placeholder="玩家名稱" /><a class="btn_blue oginv_form" id="oginv_btn_search_player">搜尋</a><a class="btn_blue oginv_form" id="oginv_btn_search_reset">重設搜尋</a><div id="oginv_search_result"></div></div></div><div class="oginv_row"><div class="oginv_label"><h2>控制台</h2></div><div class="oginv_content"><div class="oginv_table"><div class="oginv_data"><div class="oginv_field">統計日數:<input class="textInput oginv_form" type="search" id="oginv_input_range" size="2" value="'+this.info.setting.range+'"></div><div class="oginv_field"><a class="btn_blue oginv_form" id="oginv_btn_set_range">修改</a></div></div><div class="oginv_data"><div class="oginv_field"><a class="btn_blue" id="oginv_btn_recal">重新計算</a></div><div class="oginv_field"><a class="btn_blue" id="oginv_btn_reset_all">重設所有交易紀錄和統計資料</a></div></div></div></div></div></div>')
                                 .siblings('.oginv_page').css('display', 'none');
             
@@ -624,7 +624,7 @@
 
             $('#oginv_btn_info').on('click', function (){
                 if($('#oginv_info_page').css('display') !== 'none'){
-                    $('#contentWrapper').css('display', 'block');
+                    $('#contentWrapper,#middle').css('display', 'block');
                     $('#oginv_setting_page').css('display', 'none');
                     $('#oginv_info_page').css('display', 'none');
                     $("#oginv_btn_setting").removeClass("active");
@@ -632,7 +632,7 @@
                 }
                 else{
                     $("#oginv_btn_info").addClass("selected");
-                    $('#contentWrapper').css('display', 'none');
+                    $('#contentWrapper,#middle').css('display', 'none');
                     $('#oginv_setting_page').css('display', 'none');
                     $('#oginv_info_page').css('display', 'block');
                     $("#oginv_btn_setting").removeClass("active");
@@ -655,7 +655,7 @@
                                    )
                                    .on('click', function(){
                                      if($('#oginv_setting_page').css('display') !== 'none'){
-                                         $('#contentWrapper').css('display', 'block');
+                                         $('#contentWrapper,#middle').css('display', 'block');
                                          $('#oginv_setting_page').css('display', 'none');
                                          $('#oginv_info_page').css('display', 'none');
                                          $("#oginv_btn_setting").removeClass("active");
@@ -663,7 +663,7 @@
                                      }
                                      else{
                                          $("#oginv_btn_setting").addClass("active");
-                                         $('#contentWrapper').css('display', 'none');
+                                         $('#contentWrapper,#middle').css('display', 'none');
                                          $('#oginv_setting_page').css('display', 'block');
                                          $('#oginv_info_page').css('display', 'none');
                                          $("#oginv_btn_info").removeClass("selected");
